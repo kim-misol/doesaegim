@@ -5,6 +5,13 @@
 
 ---
 
+## 2026-06-27 · AI 자동완성 안전 처리 (PLAN-0003)
+- 한 일: `translate.js`에서 Anthropic 직접 호출·API 키 코드 완전 제거. `getEndpoint(env)` / `isAutocompleteAvailable(env)` 추가. `fetchMeanings`는 `endpoint` 파라미터가 없으면 즉시 throw. `App.jsx`는 `isAutocompleteAvailable()` false면 번역·사전 토글과 "뜻 가져오기" 버튼을 숨김.
+- 결정/이유: 클라이언트에 API 키 포함 불가(보안). 자동완성은 `VITE_TRANSLATE_ENDPOINT` 환경변수로 프록시가 설정됐을 때만 동작. 프록시 미설정 시 AddWord는 직접입력 전용으로 graceful 동작.
+- 변경 파일: src/lib/translate.js, src/lib/__tests__/translate.test.js, src/App.jsx
+
+---
+
 ## 2026-06-19 · 저장 영구화 (PLAN-0002)
 - 한 일: `storage.js`를 다중 백엔드(localStorage / Capacitor Preferences / memory)로 확장. 웹은 localStorage로 즉시 영속되고, 네이티브는 `resolveBackend()`가 `@capacitor/preferences`로 자동 업그레이드. `App.jsx`가 백엔드를 비동기로 해석한 뒤 로드하도록 변경.
 - 결정/이유:

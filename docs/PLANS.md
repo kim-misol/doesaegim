@@ -3,6 +3,30 @@
 새 항목은 맨 위에 추가합니다. 형식은 [`WORKFLOW.md`](WORKFLOW.md) 참고.
 
 ---
+## PLAN-0003 "AI 자동완성 안전 처리"를 TDD로 진행해. (CLAUDE.md 규칙·워크플로우 그대로, 출력은 짧게/diff만)
+
+방향: 기본은 직접입력 전용. 자동완성은 "프록시 엔드포인트가 설정됐을 때만" 동작.
+클라이언트에서 api.anthropic.com 직접 호출과 API 키 사용은 완전히 제거한다(키 노출 방지).
+
+설계:
+- src/lib/translate.js
+  - getEndpoint(env): VITE_TRANSLATE_ENDPOINT 값 반환(없으면 null). 테스트 위해 env 주입 가능하게.
+  - isAutocompleteAvailable(env): 엔드포인트 있으면 true.
+  - fetchMeanings(word, src, tgt, mode, { fetchImpl, cache, endpoint }): endpoint로 POST.
+    응답은 {t:[{m,n}]} 와 {translations:[{meaning,note}]} 둘 다 파싱(기존 parseResponse 재사용).
+    endpoint 없으면 에러 throw. 캐시는 유지.
+  - 기존 anthropic 모델/직접호출/키 관련 코드는 삭제.
+- src/App.jsx (AddWord): isAutocompleteAvailable()가 false면 번역/사전 토글과 "뜻 가져오기" 버튼을 숨기고 직접입력만 노출. true면 기존 UI 유지.
+
+테스트(mock 먼저 → 통과):
+- isAutocompleteAvailable: env 있음→true, 없음→false
+- fetchMeanings: endpoint+mock fetch로 파싱·캐시 동작 / endpoint 없으면 throw
+- parseResponse: 두 응답 형태 모두 파싱
+
+마무리: 반복 중엔 `npx vitest run src/lib/__tests__/translate.test.js`, 마지막에 `npm test`+`npm run build`.
+docs/MEMORY.md 1~3줄 기록, 커밋 메시지만 제안(Refs: PLAN-0003).
+먼저 plan 3~5줄 보여주고 진행해.
+
 
 ## PLAN-0002 · 저장 영구화 (localStorage + Capacitor)
 - 날짜: 2026-06-19

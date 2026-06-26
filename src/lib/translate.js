@@ -1,20 +1,12 @@
-// AI meaning auto-complete, powered by Claude.
-//
-// Token optimization:
-//  - Haiku model (cheapest) — translation is a light task.
-//  - Low max_tokens cap.
-//  - Terse system prompt + short JSON keys ("t"/"m"/"n") to shrink output.
-//  - In-memory cache keyed by mode|src|tgt|word so repeats cost 0 tokens.
-//  - Only called on an explicit user action (the "뜻 가져오기" button).
-//
-// To use real Google Translate / Naver dictionary instead, replace the body of
-// fetchMeanings with your backend call returning [{ meaning, note }]. The rest
-// of the app is unaffected.
-
 import { LANGS } from "./languages.js";
 
-export const TRANSLATE_MODEL = "claude-haiku-4-5-20251001";
-export const TRANSLATE_MAX_TOKENS = 256;
+export function getEndpoint(env = import.meta?.env ?? {}) {
+  return env.VITE_TRANSLATE_ENDPOINT ?? null;
+}
+
+export function isAutocompleteAvailable(env = import.meta?.env ?? {}) {
+  return !!getEndpoint(env);
+}
 
 export function buildSystemPrompt(srcLang, tgtLang, mode) {
   const src = LANGS[srcLang].label;
@@ -52,20 +44,24 @@ export async function fetchMeanings(
   {
     fetchImpl = typeof fetch !== "undefined" ? fetch : undefined,
     cache = memCache,
+    endpoint = getEndpoint(),
   } = {}
 ) {
+  if (!endpoint) throw new Error("no endpoint configured — set VITE_TRANSLATE_ENDPOINT");
+
   const key = cacheKey(word, srcLang, tgtLang, mode);
   if (cache.has(key)) return cache.get(key);
   if (!fetchImpl) throw new Error("no fetch available");
 
-  const res = await fetchImpl("https://api.anthropic.com/v1/messages", {
+  const res = await fetchImpl(endpoint, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      model: TRANSLATE_MODEL,
-      max_tokens: TRANSLATE_MAX_TOKENS,
-      system: buildSystemPrompt(srcLang, tgtLang, mode),
-      messages: [{ role: "user", content: word.trim() }],
+      word: word.trim(),
+      srcLang,
+      tgtLang,
+      mode,
+      systemPrompt: buildSystemPrompt(srcLang, tgtLang, mode),
     }),
   });
   if (!res.ok) throw new Error("request failed: " + res.status);

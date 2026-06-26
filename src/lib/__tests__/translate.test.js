@@ -4,6 +4,8 @@ import {
   parseResponse,
   cacheKey,
   fetchMeanings,
+  getEndpoint,
+  isAutocompleteAvailable,
 } from "../translate.js";
 
 describe("buildSystemPrompt", () => {
@@ -42,31 +44,58 @@ describe("cacheKey", () => {
   });
 });
 
+describe("getEndpoint", () => {
+  it("returns env variable value when set", () => {
+    expect(getEndpoint({ VITE_TRANSLATE_ENDPOINT: "https://proxy.example.com" })).toBe(
+      "https://proxy.example.com"
+    );
+  });
+  it("returns null when not set", () => {
+    expect(getEndpoint({})).toBeNull();
+  });
+});
+
+describe("isAutocompleteAvailable", () => {
+  it("returns true when endpoint is configured", () => {
+    expect(isAutocompleteAvailable({ VITE_TRANSLATE_ENDPOINT: "https://proxy.example.com" })).toBe(true);
+  });
+  it("returns false when no endpoint", () => {
+    expect(isAutocompleteAvailable({})).toBe(false);
+  });
+});
+
 describe("fetchMeanings", () => {
   const okResponse = (text) => ({ ok: true, json: async () => ({ content: [{ type: "text", text }] }) });
+  const ENDPOINT = "https://proxy.example.com/translate";
 
   it("calls the API once, then serves from cache", async () => {
     const cache = new Map();
     const fetchImpl = vi.fn(async () => okResponse('{"t":[{"m":"chien","n":""}]}'));
-    const a = await fetchMeanings("dog", "en", "fr", "translate", { fetchImpl, cache });
-    const b = await fetchMeanings("dog", "en", "fr", "translate", { fetchImpl, cache });
+    const a = await fetchMeanings("dog", "en", "fr", "translate", { fetchImpl, cache, endpoint: ENDPOINT });
+    const b = await fetchMeanings("dog", "en", "fr", "translate", { fetchImpl, cache, endpoint: ENDPOINT });
     expect(a).toEqual([{ meaning: "chien", note: "" }]);
     expect(b).toEqual(a);
-    expect(fetchImpl).toHaveBeenCalledTimes(1); // second call hits cache -> 0 tokens
+    expect(fetchImpl).toHaveBeenCalledTimes(1);
   });
 
   it("throws on a non-ok response", async () => {
     const fetchImpl = vi.fn(async () => ({ ok: false, status: 500 }));
     await expect(
-      fetchMeanings("x", "en", "ko", "translate", { fetchImpl, cache: new Map() })
+      fetchMeanings("x", "en", "ko", "translate", { fetchImpl, cache: new Map(), endpoint: ENDPOINT })
     ).rejects.toThrow();
   });
 
-  it("uses the cheap Haiku model with a low token cap", async () => {
+  it("POSTs to the configured endpoint", async () => {
     const fetchImpl = vi.fn(async () => okResponse('{"t":[{"m":"고양이","n":""}]}'));
-    await fetchMeanings("cat", "en", "ko", "translate", { fetchImpl, cache: new Map() });
-    const body = JSON.parse(fetchImpl.mock.calls[0][1].body);
-    expect(body.model).toMatch(/haiku/);
-    expect(body.max_tokens).toBeLessThanOrEqual(256);
+    await fetchMeanings("cat", "en", "ko", "translate", { fetchImpl, cache: new Map(), endpoint: ENDPOINT });
+    expect(fetchImpl.mock.calls[0][0]).toBe(ENDPOINT);
+    expect(fetchImpl.mock.calls[0][1].method).toBe("POST");
+  });
+
+  it("throws when no endpoint is provided", async () => {
+    const fetchImpl = vi.fn();
+    await expect(
+      fetchMeanings("dog", "en", "fr", "translate", { fetchImpl, cache: new Map() })
+    ).rejects.toThrow(/endpoint/i);
   });
 });

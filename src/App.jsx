@@ -9,7 +9,9 @@ import {
 } from "./lib/srs.js";
 import { createWordStore, resolveBackend } from "./lib/storage.js";
 import { speak } from "./lib/speech.js";
-import { fetchMeanings } from "./lib/translate.js";
+import { fetchMeanings, isAutocompleteAvailable } from "./lib/translate.js";
+
+const autocompleteEnabled = isAutocompleteAvailable();
 
 /* ───────────────────────── icons ───────────────────────── */
 
@@ -358,15 +360,17 @@ function AddWord({ onSave }) {
         </div>
       </div>
 
-      <div className="vc-auto">
-        <div className="vc-seg">
-          <button className={mode === "translate" ? "on" : ""} onClick={() => setMode("translate")}>번역 <i>AI</i></button>
-          <button className={mode === "dict" ? "on" : ""} onClick={() => setMode("dict")}>사전 <i>AI</i></button>
+      {autocompleteEnabled && (
+        <div className="vc-auto">
+          <div className="vc-seg">
+            <button className={mode === "translate" ? "on" : ""} onClick={() => setMode("translate")}>번역 <i>AI</i></button>
+            <button className={mode === "dict" ? "on" : ""} onClick={() => setMode("dict")}>사전 <i>AI</i></button>
+          </div>
+          <button className="vc-fetch" disabled={!word.trim() || loading} onClick={autocomplete}>
+            {loading ? "가져오는 중…" : "뜻 가져오기"}
+          </button>
         </div>
-        <button className="vc-fetch" disabled={!word.trim() || loading} onClick={autocomplete}>
-          {loading ? "가져오는 중…" : "뜻 가져오기"}
-        </button>
-      </div>
+      )}
 
       {error ? <div className="vc-note warn">{error}</div> : null}
 
