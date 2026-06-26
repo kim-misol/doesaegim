@@ -7,7 +7,7 @@ import {
   dueLabel,
   nextIntervalDays,
 } from "./lib/srs.js";
-import { createWordStore } from "./lib/storage.js";
+import { createWordStore, resolveBackend } from "./lib/storage.js";
 import { speak } from "./lib/speech.js";
 import { fetchMeanings } from "./lib/translate.js";
 
@@ -44,23 +44,34 @@ export default function App() {
   const [ready, setReady] = useState(false);
   const [tab, setTab] = useState("today");
   const [session, setSession] = useState(null);
-  const storeRef = useRef(createWordStore());
+  const storeRef = useRef(null);
 
   useEffect(() => {
     if (typeof window !== "undefined" && window.speechSynthesis) {
       window.speechSynthesis.getVoices();
       window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
     }
-    storeRef.current.load().then((w) => {
-      setWords(w);
-      setReady(true);
-    });
+    let alive = true;
+    resolveBackend()
+      .then((backend) => {
+        storeRef.current = createWordStore(backend);
+        return storeRef.current.load();
+      })
+      .then((w) => {
+        if (alive) {
+          setWords(w);
+          setReady(true);
+        }
+      });
+    return () => {
+      alive = false;
+    };
   }, []);
 
   const commit = useCallback((updater) => {
     setWords((prev) => {
       const next = typeof updater === "function" ? updater(prev) : updater;
-      storeRef.current.save(next);
+      if (storeRef.current) storeRef.current.save(next);
       return next;
     });
   }, []);

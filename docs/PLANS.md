@@ -4,6 +4,21 @@
 
 ---
 
+## PLAN-0002 · 저장 영구화 (localStorage + Capacitor)
+- 날짜: 2026-06-19
+- 상태: done
+- 목표: 앱을 껐다 켜도 단어가 유지되도록 실제 영속 저장을 붙인다.
+- 인수 조건:
+  - [x] 웹(dev/Pages)에서 새로고침 후에도 단어 유지 (localStorage)
+  - [x] 백엔드 선택 우선순위: window.storage(아티팩트) > localStorage > memory
+  - [x] Capacitor 네이티브에서 @capacitor/preferences로 자동 업그레이드 (resolveBackend)
+  - [x] 손상된 JSON / 비배열 값에도 안전
+- 건드린 파일: src/lib/storage.js, src/App.jsx, src/lib/__tests__/storage.test.js
+- 테스트(먼저 작성): localStorage 영속 · Preferences 라운드트립(mock) · 백엔드 우선순위 · 손상 복구
+- 비고: Preferences는 동적 import(/* @vite-ignore */)라 미설치 상태에서도 빌드·실행이 안전.
+
+---
+
 ## PLAN-0001 · 프로젝트 부트스트랩
 - 날짜: 2026-06-19
 - 상태: done
