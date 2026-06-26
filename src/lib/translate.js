@@ -1,10 +1,10 @@
 import { LANGS } from "./languages.js";
 
-export function getEndpoint(env = import.meta?.env ?? {}) {
-  return env.VITE_TRANSLATE_ENDPOINT ?? null;
+export function getEndpoint(env = import.meta.env) {
+  return env?.VITE_TRANSLATE_ENDPOINT ?? null;
 }
 
-export function isAutocompleteAvailable(env = import.meta?.env ?? {}) {
+export function isAutocompleteAvailable(env = import.meta.env) {
   return !!getEndpoint(env);
 }
 

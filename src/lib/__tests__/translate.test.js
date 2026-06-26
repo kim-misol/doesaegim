@@ -93,9 +93,8 @@ describe("fetchMeanings", () => {
   });
 
   it("throws when no endpoint is provided", async () => {
-    const fetchImpl = vi.fn();
     await expect(
-      fetchMeanings("dog", "en", "fr", "translate", { fetchImpl, cache: new Map() })
+      fetchMeanings("dog", "en", "fr", "translate", { fetchImpl: vi.fn(), cache: new Map(), endpoint: null })
     ).rejects.toThrow(/endpoint/i);
   });
 });
