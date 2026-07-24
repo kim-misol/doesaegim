@@ -13,6 +13,14 @@
 
 ---
 
+## 2026-07-24 · 오늘 진행률 계산 정리 (progress.js)
+
+- 한 일: Today 진행률 계산을 `progress.js`의 `reviewProgress(words, passedToday, now)` 순수 함수로 추출. 공식: `passedToday / (passedToday + dueTotal)`, dueTotal은 현재 due 전부(오늘 추가분 포함), pct 0~100 클램프. 테스트 4개.
+- 결정/이유: 사용자 요청 — 오늘 추가 카드도 분모에 포함(링이 뒤로 밀리는 건 허용). 완료 수(passedToday)는 mount 로드·채점 bump에서만 갱신되어 단어 추가로 리셋되지 않음(확인함).
+- 변경 파일: src/App.jsx(import·사용), src/lib/progress.js(+test). 총 81 그린, 빌드 OK.
+
+---
+
 ## 2026-07-24 · 언어별 복습 순서 드래그 변경
 
 - 한 일: Today 언어 카드에 그립 핸들(⠿) 추가, 포인터 기반 DnD(터치+마우스, 라이브 재정렬)로 순서 변경. 순서는 device-local 저장(`langOrder.js` — normalizeOrder/moveItem/createLangOrderStore). langcard를 button→div(role=button)로 바꾸고 그리드 열 추가(그립). 테스트 7개(정규화·이동) → 총 77 그린.

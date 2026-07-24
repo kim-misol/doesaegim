@@ -9,11 +9,21 @@ describe("normalizeOrder", () => {
     expect(normalizeOrder(saved, ALL)).toEqual(saved);
   });
   it("appends languages missing from the saved order", () => {
-    expect(normalizeOrder(["es", "en"], ALL)).toEqual(["es", "en", "ko", "it", "de"]);
+    expect(normalizeOrder(["es", "en"], ALL)).toEqual([
+      "es",
+      "en",
+      "ko",
+      "it",
+      "de",
+    ]);
   });
   it("drops unknown/removed languages and dedupes", () => {
     expect(normalizeOrder(["fr", "es", "es", "en"], ALL)).toEqual([
-      "es", "en", "ko", "it", "de",
+      "es",
+      "en",
+      "ko",
+      "it",
+      "de",
     ]);
   });
   it("falls back to all when saved is empty/null", () => {

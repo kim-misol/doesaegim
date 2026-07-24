@@ -15,7 +15,9 @@ export function pickVoice(voices, langCode) {
   const sameBase = voices.filter((v) => norm(v.lang).split("-")[0] === base);
   const pool = exact.length ? exact : sameBase;
   if (!pool.length) return null;
-  return pool.find((v) => v.localService) || pool.find((v) => v.default) || pool[0];
+  return (
+    pool.find((v) => v.localService) || pool.find((v) => v.default) || pool[0]
+  );
 }
 
 export function speak(
@@ -43,7 +45,10 @@ export function speak(
 
 // True when the device actually has a voice for this language. Lets the UI
 // warn the user (e.g. macOS lacks Spanish voice → English fallback).
-export function hasVoiceFor(langCode, synth = typeof window !== "undefined" ? window.speechSynthesis : null) {
+export function hasVoiceFor(
+  langCode,
+  synth = typeof window !== "undefined" ? window.speechSynthesis : null,
+) {
   const voices = synth && synth.getVoices ? synth.getVoices() : [];
   return !!pickVoice(voices, langCode);
 }

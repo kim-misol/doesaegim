@@ -23,6 +23,7 @@ export function papagoUrl(word, srcLang, tgtLang) {
 }
 
 export function naverDictUrl(word, srcLang) {
-  const base = NAVER_DICT[srcLang] || "https://dict.naver.com/dict.search?query=";
+  const base =
+    NAVER_DICT[srcLang] || "https://dict.naver.com/dict.search?query=";
   return base + encodeURIComponent((word || "").trim());
 }

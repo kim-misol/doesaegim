@@ -21,7 +21,9 @@ describe("pickVoice", () => {
     expect(pickVoice(voices, "es-ES").name).toBe("Mónica"); // local, not cloud
   });
   it("normalizes underscore locales", () => {
-    expect(pickVoice([{ lang: "de_DE", name: "Anna" }], "de-DE").name).toBe("Anna");
+    expect(pickVoice([{ lang: "de_DE", name: "Anna" }], "de-DE").name).toBe(
+      "Anna",
+    );
   });
   it("returns null when nothing matches or list is empty", () => {
     expect(pickVoice(voices, "it-IT")).toBeNull();

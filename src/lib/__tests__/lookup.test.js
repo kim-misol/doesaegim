@@ -8,7 +8,9 @@ describe("papagoUrl", () => {
     );
   });
   it("url-encodes spaces and special characters", () => {
-    expect(papagoUrl("buenos días", "es", "ko")).toContain("st=buenos%20d%C3%ADas");
+    expect(papagoUrl("buenos días", "es", "ko")).toContain(
+      "st=buenos%20d%C3%ADas",
+    );
   });
   it("trims and handles all supported langs", () => {
     expect(papagoUrl(" Hund ", "de", "en")).toBe(

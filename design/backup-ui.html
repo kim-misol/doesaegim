@@ -1,159 +1,467 @@
 <!doctype html>
 <html lang="ko">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>되새김 · 백업 UI 개선 시안</title>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@1.3.9/dist/web/static/pretendard.min.css" />
-<style>
-  :root{
-    --ink:#f3f5ff; --ink2:rgba(228,232,255,.62); --line:rgba(255,255,255,.14); --line2:rgba(255,255,255,.22);
-    --glass:rgba(255,255,255,.055); --glass2:rgba(255,255,255,.10);
-    --v:#8b7bff; --p:#ff8bc4; --a:#a7ff5b; --got:#8fe6b0;
-    --lg:radial-gradient(120% 62% at 30% -12%,rgba(255,255,255,.16),transparent 55%),
-        linear-gradient(155deg,rgba(255,255,255,.12),rgba(255,255,255,.035));
-    --lgsh:inset 0 1px 0 rgba(255,255,255,.5),inset 0 -14px 26px -18px rgba(0,0,0,.55),0 18px 40px -26px rgba(90,70,220,.45);
-  }
-  *{box-sizing:border-box;margin:0;padding:0}
-  body{font-family:Pretendard,system-ui,sans-serif;color:var(--ink);
-    background:radial-gradient(1100px 700px at 50% -12%,#101427,#05060d 62%);
-    min-height:100vh;display:flex;flex-direction:column;align-items:center;gap:12px;padding:44px 18px 70px}
-  h1{font-size:24px;font-weight:800;letter-spacing:-.02em}
-  .lead{color:#8b93b5;font-size:14px;text-align:center;max-width:620px;margin-bottom:14px;line-height:1.6}
-  .stage{display:flex;gap:26px;flex-wrap:wrap;justify-content:center;align-items:flex-start}
-  .col{width:340px}
-  .cap{font-size:12.5px;color:#9aa0b8;margin:0 2px 10px;display:flex;align-items:center;gap:8px}
-  .pick{font-size:10px;font-weight:800;letter-spacing:.08em;color:#05060d;background:var(--a);border-radius:99px;padding:3px 8px}
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>되새김 · 백업 UI 개선 시안</title>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@1.3.9/dist/web/static/pretendard.min.css"
+    />
+    <style>
+      :root {
+        --ink: #f3f5ff;
+        --ink2: rgba(228, 232, 255, 0.62);
+        --line: rgba(255, 255, 255, 0.14);
+        --line2: rgba(255, 255, 255, 0.22);
+        --glass: rgba(255, 255, 255, 0.055);
+        --glass2: rgba(255, 255, 255, 0.1);
+        --v: #8b7bff;
+        --p: #ff8bc4;
+        --a: #a7ff5b;
+        --got: #8fe6b0;
+        --lg:
+          radial-gradient(
+            120% 62% at 30% -12%,
+            rgba(255, 255, 255, 0.16),
+            transparent 55%
+          ),
+          linear-gradient(
+            155deg,
+            rgba(255, 255, 255, 0.12),
+            rgba(255, 255, 255, 0.035)
+          );
+        --lgsh:
+          inset 0 1px 0 rgba(255, 255, 255, 0.5),
+          inset 0 -14px 26px -18px rgba(0, 0, 0, 0.55),
+          0 18px 40px -26px rgba(90, 70, 220, 0.45);
+      }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        font-family: Pretendard, system-ui, sans-serif;
+        color: var(--ink);
+        background: radial-gradient(
+          1100px 700px at 50% -12%,
+          #101427,
+          #05060d 62%
+        );
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+        padding: 44px 18px 70px;
+      }
+      h1 {
+        font-size: 24px;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+      }
+      .lead {
+        color: #8b93b5;
+        font-size: 14px;
+        text-align: center;
+        max-width: 620px;
+        margin-bottom: 14px;
+        line-height: 1.6;
+      }
+      .stage {
+        display: flex;
+        gap: 26px;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-items: flex-start;
+      }
+      .col {
+        width: 340px;
+      }
+      .cap {
+        font-size: 12.5px;
+        color: #9aa0b8;
+        margin: 0 2px 10px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .pick {
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        color: #05060d;
+        background: var(--a);
+        border-radius: 99px;
+        padding: 3px 8px;
+      }
 
-  .frame{border-radius:26px;border:1px solid rgba(255,255,255,.08);background:#080a12;padding:18px 16px 20px;
-    box-shadow:0 30px 70px -34px rgba(90,70,220,.5)}
-  .hdr{display:flex;align-items:center;justify-content:space-between;margin:2px 2px 14px}
-  .hdr .w{font-weight:800;font-size:17px}
-  .hdr .chips{display:flex;gap:6px}
-  .hdr .chip{font-size:11px;color:var(--ink2);border:1px solid var(--line);border-radius:99px;padding:4px 10px}
-  .hdr .chip.on{background:linear-gradient(140deg,var(--v),var(--p));color:#fff;border-color:transparent}
+      .frame {
+        border-radius: 26px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        background: #080a12;
+        padding: 18px 16px 20px;
+        box-shadow: 0 30px 70px -34px rgba(90, 70, 220, 0.5);
+      }
+      .hdr {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin: 2px 2px 14px;
+      }
+      .hdr .w {
+        font-weight: 800;
+        font-size: 17px;
+      }
+      .hdr .chips {
+        display: flex;
+        gap: 6px;
+      }
+      .hdr .chip {
+        font-size: 11px;
+        color: var(--ink2);
+        border: 1px solid var(--line);
+        border-radius: 99px;
+        padding: 4px 10px;
+      }
+      .hdr .chip.on {
+        background: linear-gradient(140deg, var(--v), var(--p));
+        color: #fff;
+        border-color: transparent;
+      }
 
-  /* generic glass card */
-  .card{position:relative;background:var(--lg);border:1px solid var(--line);border-radius:20px;box-shadow:var(--lgsh)}
+      /* generic glass card */
+      .card {
+        position: relative;
+        background: var(--lg);
+        border: 1px solid var(--line);
+        border-radius: 20px;
+        box-shadow: var(--lgsh);
+      }
 
-  /* faux word rows for context */
-  .words{display:flex;flex-direction:column;gap:10px;margin-top:14px}
-  .wrow{display:flex;align-items:center;gap:12px;padding:13px 15px}
-  .tag{font-family:ui-monospace,Menlo,monospace;font-size:11px;font-weight:700;color:var(--ink2)}
-  .wbody{flex:1}
-  .wbody b{font-size:15px;font-weight:600}
-  .wbody span{display:block;font-size:12px;color:var(--ink2)}
+      /* faux word rows for context */
+      .words {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin-top: 14px;
+      }
+      .wrow {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 13px 15px;
+      }
+      .tag {
+        font-family: ui-monospace, Menlo, monospace;
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--ink2);
+      }
+      .wbody {
+        flex: 1;
+      }
+      .wbody b {
+        font-size: 15px;
+        font-weight: 600;
+      }
+      .wbody span {
+        display: block;
+        font-size: 12px;
+        color: var(--ink2);
+      }
 
-  /* ── Variant A: labeled backup card ── */
-  .bk{padding:16px}
-  .bk-top{display:flex;align-items:center;gap:9px;margin-bottom:4px}
-  .bk-ic{width:30px;height:30px;border-radius:10px;display:grid;place-items:center;font-size:16px;
-    background:linear-gradient(140deg,rgba(139,123,255,.3),rgba(255,139,196,.24));border:1px solid var(--line2)}
-  .bk-title{font-weight:700;font-size:15px}
-  .bk-desc{font-size:12.5px;color:var(--ink2);line-height:1.5;margin:0 0 14px}
-  .bk-btns{display:flex;gap:8px}
-  .btn{flex:1;display:flex;align-items:center;justify-content:center;gap:7px;padding:13px;border-radius:14px;
-    font-size:14px;font-weight:640;cursor:pointer;border:1px solid var(--line);background:var(--glass);color:var(--ink);
-    box-shadow:inset 0 1px 0 rgba(255,255,255,.28)}
-  .btn.primary{background:linear-gradient(140deg,var(--v),var(--p));border:none;color:#fff;
-    box-shadow:inset 0 1px 0 rgba(255,255,255,.4),0 12px 26px -14px rgba(139,123,255,.8)}
-  .bk-more{display:block;text-align:center;margin-top:12px;font-size:12px;color:var(--ink2);text-decoration:none}
-  .bk-more u{text-underline-offset:2px}
+      /* ── Variant A: labeled backup card ── */
+      .bk {
+        padding: 16px;
+      }
+      .bk-top {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        margin-bottom: 4px;
+      }
+      .bk-ic {
+        width: 30px;
+        height: 30px;
+        border-radius: 10px;
+        display: grid;
+        place-items: center;
+        font-size: 16px;
+        background: linear-gradient(
+          140deg,
+          rgba(139, 123, 255, 0.3),
+          rgba(255, 139, 196, 0.24)
+        );
+        border: 1px solid var(--line2);
+      }
+      .bk-title {
+        font-weight: 700;
+        font-size: 15px;
+      }
+      .bk-desc {
+        font-size: 12.5px;
+        color: var(--ink2);
+        line-height: 1.5;
+        margin: 0 0 14px;
+      }
+      .bk-btns {
+        display: flex;
+        gap: 8px;
+      }
+      .btn {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        padding: 13px;
+        border-radius: 14px;
+        font-size: 14px;
+        font-weight: 640;
+        cursor: pointer;
+        border: 1px solid var(--line);
+        background: var(--glass);
+        color: var(--ink);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28);
+      }
+      .btn.primary {
+        background: linear-gradient(140deg, var(--v), var(--p));
+        border: none;
+        color: #fff;
+        box-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, 0.4),
+          0 12px 26px -14px rgba(139, 123, 255, 0.8);
+      }
+      .bk-more {
+        display: block;
+        text-align: center;
+        margin-top: 12px;
+        font-size: 12px;
+        color: var(--ink2);
+        text-decoration: none;
+      }
+      .bk-more u {
+        text-underline-offset: 2px;
+      }
 
-  /* ── Variant B: collapsible ── */
-  .acc{overflow:hidden}
-  .acc-head{display:flex;align-items:center;gap:10px;padding:15px 16px;cursor:pointer}
-  .acc-head .chev{margin-left:auto;color:var(--ink2);transition:transform .2s}
-  .acc.open .acc-head .chev{transform:rotate(90deg)}
-  .acc-body{padding:0 16px 16px;border-top:1px solid var(--line)}
-  .acc-body .bk-desc{margin:12px 0 12px}
+      /* ── Variant B: collapsible ── */
+      .acc {
+        overflow: hidden;
+      }
+      .acc-head {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 15px 16px;
+        cursor: pointer;
+      }
+      .acc-head .chev {
+        margin-left: auto;
+        color: var(--ink2);
+        transition: transform 0.2s;
+      }
+      .acc.open .acc-head .chev {
+        transform: rotate(90deg);
+      }
+      .acc-body {
+        padding: 0 16px 16px;
+        border-top: 1px solid var(--line);
+      }
+      .acc-body .bk-desc {
+        margin: 12px 0 12px;
+      }
 
-  /* ── Variant C: cloud-aware ── */
-  .cloud{padding:15px 16px;display:flex;flex-direction:column;gap:12px}
-  .cloud-row{display:flex;align-items:center;gap:11px}
-  .cloud-ic{width:34px;height:34px;border-radius:11px;display:grid;place-items:center;font-size:17px;
-    background:rgba(143,230,176,.16);border:1px solid rgba(143,230,176,.32)}
-  .cloud-t b{font-size:14px;font-weight:700;display:flex;align-items:center;gap:6px}
-  .cloud-t .ok{color:var(--got);font-size:13px}
-  .cloud-t span{font-size:12px;color:var(--ink2)}
-  .cloud-sec{display:flex;gap:8px;border-top:1px solid var(--line);padding-top:12px}
-  .lite{flex:1;text-align:center;padding:10px;border-radius:12px;border:1px solid var(--line);background:var(--glass);
-    font-size:13px;font-weight:600;color:var(--ink2);cursor:pointer}
-</style>
-</head>
-<body>
-  <h1>백업 UI 개선 시안</h1>
-  <p class="lead">"JSON/CSV" 대신 <b>목적(백업·복원)</b>을 알 수 있게. 단어 화면 상단에 놓이는 3가지 안이에요.</p>
+      /* ── Variant C: cloud-aware ── */
+      .cloud {
+        padding: 15px 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      .cloud-row {
+        display: flex;
+        align-items: center;
+        gap: 11px;
+      }
+      .cloud-ic {
+        width: 34px;
+        height: 34px;
+        border-radius: 11px;
+        display: grid;
+        place-items: center;
+        font-size: 17px;
+        background: rgba(143, 230, 176, 0.16);
+        border: 1px solid rgba(143, 230, 176, 0.32);
+      }
+      .cloud-t b {
+        font-size: 14px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .cloud-t .ok {
+        color: var(--got);
+        font-size: 13px;
+      }
+      .cloud-t span {
+        font-size: 12px;
+        color: var(--ink2);
+      }
+      .cloud-sec {
+        display: flex;
+        gap: 8px;
+        border-top: 1px solid var(--line);
+        padding-top: 12px;
+      }
+      .lite {
+        flex: 1;
+        text-align: center;
+        padding: 10px;
+        border-radius: 12px;
+        border: 1px solid var(--line);
+        background: var(--glass);
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--ink2);
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>백업 UI 개선 시안</h1>
+    <p class="lead">
+      "JSON/CSV" 대신 <b>목적(백업·복원)</b>을 알 수 있게. 단어 화면 상단에
+      놓이는 3가지 안이에요.
+    </p>
 
-  <div class="stage">
-    <!-- Variant A -->
-    <div class="col">
-      <div class="cap">A · 라벨형 백업 카드 <span class="pick">추천</span></div>
-      <div class="frame">
-        <div class="hdr"><div class="w">단어</div><div class="chips"><span class="chip on">전체</span><span class="chip">ES</span><span class="chip">EN</span></div></div>
-        <div class="card bk">
-          <div class="bk-top"><div class="bk-ic">💾</div><div class="bk-title">백업 · 복원</div></div>
-          <p class="bk-desc">기기를 바꾸거나 브라우저를 정리해도 단어를 잃지 않도록 파일로 저장해요.</p>
-          <div class="bk-btns">
-            <button class="btn primary">⬇ 내 단어 백업</button>
-            <button class="btn">⬆ 백업 불러오기</button>
+    <div class="stage">
+      <!-- Variant A -->
+      <div class="col">
+        <div class="cap">
+          A · 라벨형 백업 카드 <span class="pick">추천</span>
+        </div>
+        <div class="frame">
+          <div class="hdr">
+            <div class="w">단어</div>
+            <div class="chips">
+              <span class="chip on">전체</span><span class="chip">ES</span
+              ><span class="chip">EN</span>
+            </div>
           </div>
-          <a class="bk-more" href="#"><u>엑셀용 CSV로 내보내기</u></a>
-        </div>
-        <div class="words">
-          <div class="card wrow"><span class="tag">ES</span><div class="wbody"><b>resiliencia</b><span>회복력</span></div></div>
-          <div class="card wrow"><span class="tag">EN</span><div class="wbody"><b>serendipity</b><span>뜻밖의 행운</span></div></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Variant B -->
-    <div class="col">
-      <div class="cap">B · 접이식 패널 (평소엔 접힘)</div>
-      <div class="frame">
-        <div class="hdr"><div class="w">단어</div><div class="chips"><span class="chip on">전체</span><span class="chip">ES</span><span class="chip">EN</span></div></div>
-        <div class="card acc open">
-          <div class="acc-head"><div class="bk-ic">💾</div><div class="bk-title">백업 · 복원</div><span class="chev">›</span></div>
-          <div class="acc-body">
-            <p class="bk-desc">단어를 파일로 저장하거나 예전 백업을 불러와요.</p>
+          <div class="card bk">
+            <div class="bk-top">
+              <div class="bk-ic">💾</div>
+              <div class="bk-title">백업 · 복원</div>
+            </div>
+            <p class="bk-desc">
+              기기를 바꾸거나 브라우저를 정리해도 단어를 잃지 않도록 파일로
+              저장해요.
+            </p>
             <div class="bk-btns">
               <button class="btn primary">⬇ 내 단어 백업</button>
-              <button class="btn">⬆ 불러오기</button>
+              <button class="btn">⬆ 백업 불러오기</button>
             </div>
             <a class="bk-more" href="#"><u>엑셀용 CSV로 내보내기</u></a>
           </div>
-        </div>
-        <div class="words">
-          <div class="card wrow"><span class="tag">ES</span><div class="wbody"><b>resiliencia</b><span>회복력</span></div></div>
-          <div class="card wrow"><span class="tag">EN</span><div class="wbody"><b>serendipity</b><span>뜻밖의 행운</span></div></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Variant C -->
-    <div class="col">
-      <div class="cap">C · 클라우드 연동 인지형 (로그인 시)</div>
-      <div class="frame">
-        <div class="hdr"><div class="w">단어</div><div class="chips"><span class="chip on">전체</span><span class="chip">ES</span><span class="chip">EN</span></div></div>
-        <div class="card cloud">
-          <div class="cloud-row">
-            <div class="cloud-ic">☁️</div>
-            <div class="cloud-t">
-              <b>자동 백업 중 <span class="ok">✓</span></b>
-              <span>로그인됨 · 모든 기기에서 안전하게 동기화</span>
+          <div class="words">
+            <div class="card wrow">
+              <span class="tag">ES</span>
+              <div class="wbody"><b>resiliencia</b><span>회복력</span></div>
+            </div>
+            <div class="card wrow">
+              <span class="tag">EN</span>
+              <div class="wbody">
+                <b>serendipity</b><span>뜻밖의 행운</span>
+              </div>
             </div>
           </div>
-          <div class="cloud-sec">
-            <button class="lite">⬇ 파일로도 백업</button>
-            <button class="lite">⬆ 불러오기</button>
+        </div>
+      </div>
+
+      <!-- Variant B -->
+      <div class="col">
+        <div class="cap">B · 접이식 패널 (평소엔 접힘)</div>
+        <div class="frame">
+          <div class="hdr">
+            <div class="w">단어</div>
+            <div class="chips">
+              <span class="chip on">전체</span><span class="chip">ES</span
+              ><span class="chip">EN</span>
+            </div>
+          </div>
+          <div class="card acc open">
+            <div class="acc-head">
+              <div class="bk-ic">💾</div>
+              <div class="bk-title">백업 · 복원</div>
+              <span class="chev">›</span>
+            </div>
+            <div class="acc-body">
+              <p class="bk-desc">
+                단어를 파일로 저장하거나 예전 백업을 불러와요.
+              </p>
+              <div class="bk-btns">
+                <button class="btn primary">⬇ 내 단어 백업</button>
+                <button class="btn">⬆ 불러오기</button>
+              </div>
+              <a class="bk-more" href="#"><u>엑셀용 CSV로 내보내기</u></a>
+            </div>
+          </div>
+          <div class="words">
+            <div class="card wrow">
+              <span class="tag">ES</span>
+              <div class="wbody"><b>resiliencia</b><span>회복력</span></div>
+            </div>
+            <div class="card wrow">
+              <span class="tag">EN</span>
+              <div class="wbody">
+                <b>serendipity</b><span>뜻밖의 행운</span>
+              </div>
+            </div>
           </div>
         </div>
-        <div class="words">
-          <div class="card wrow"><span class="tag">ES</span><div class="wbody"><b>resiliencia</b><span>회복력</span></div></div>
-          <div class="card wrow"><span class="tag">EN</span><div class="wbody"><b>serendipity</b><span>뜻밖의 행운</span></div></div>
+      </div>
+
+      <!-- Variant C -->
+      <div class="col">
+        <div class="cap">C · 클라우드 연동 인지형 (로그인 시)</div>
+        <div class="frame">
+          <div class="hdr">
+            <div class="w">단어</div>
+            <div class="chips">
+              <span class="chip on">전체</span><span class="chip">ES</span
+              ><span class="chip">EN</span>
+            </div>
+          </div>
+          <div class="card cloud">
+            <div class="cloud-row">
+              <div class="cloud-ic">☁️</div>
+              <div class="cloud-t">
+                <b>자동 백업 중 <span class="ok">✓</span></b>
+                <span>로그인됨 · 모든 기기에서 안전하게 동기화</span>
+              </div>
+            </div>
+            <div class="cloud-sec">
+              <button class="lite">⬇ 파일로도 백업</button>
+              <button class="lite">⬆ 불러오기</button>
+            </div>
+          </div>
+          <div class="words">
+            <div class="card wrow">
+              <span class="tag">ES</span>
+              <div class="wbody"><b>resiliencia</b><span>회복력</span></div>
+            </div>
+            <div class="card wrow">
+              <span class="tag">EN</span>
+              <div class="wbody">
+                <b>serendipity</b><span>뜻밖의 행운</span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
-  </div>
-</body>
+  </body>
 </html>

@@ -14,6 +14,7 @@ import {
 } from "./lib/storage.js";
 import { createDailyStats } from "./lib/dailyStats.js";
 import { createLangOrderStore, moveItem } from "./lib/langOrder.js";
+import { reviewProgress } from "./lib/progress.js";
 import { createRemoteWordStore } from "./lib/remoteStore.js";
 import {
   isCloudConfigured,
@@ -425,8 +426,8 @@ function Today({
     );
   }
 
-  const goal = passedToday + dueTotal;
-  const pct = goal > 0 ? Math.round((passedToday / goal) * 100) : 100;
+  // Progress excludes cards created today, so adding a word doesn't reset it.
+  const { pct, goal } = reviewProgress(words, passedToday);
 
   return (
     <div className="vc-view">
@@ -939,13 +940,18 @@ function BackupBar({ words, commit }) {
       {open && (
         <div className="vc-bk-body">
           <p className="vc-bk-desc">
-            기기를 바꾸거나 브라우저를 정리해도 단어를 잃지 않도록 파일로 저장해요.
+            기기를 바꾸거나 브라우저를 정리해도 단어를 잃지 않도록 파일로
+            저장해요.
           </p>
           <div className="vc-bk-btns">
             <button
               className="vc-bk-btn primary"
               onClick={() =>
-                download("doesaegim.json", wordsToJSON(words), "application/json")
+                download(
+                  "doesaegim.json",
+                  wordsToJSON(words),
+                  "application/json",
+                )
               }
             >
               ⬇ 내 단어 백업
