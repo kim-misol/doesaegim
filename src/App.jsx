@@ -33,6 +33,7 @@ import {
 } from "./lib/backup.js";
 import { speak, primeSpeech } from "./lib/speech.js";
 import { papagoUrl, naverDictUrl } from "./lib/lookup.js";
+import { findDuplicates } from "./lib/dedupe.js";
 
 const cloudEnabled = isCloudConfigured();
 
@@ -383,7 +384,11 @@ export default function App() {
             onAdd={() => setTab("add")}
           />
         ) : tab === "add" ? (
-          <AddWord onSave={(w) => commit((prev) => [w, ...prev])} />
+          <AddWord
+            onSave={(w) => commit((prev) => [w, ...prev])}
+            words={words}
+            onViewList={() => setTab("list")}
+          />
         ) : (
           <WordList words={words} commit={commit} />
         )}
@@ -701,12 +706,14 @@ function Face({ side, text, lang, hint, accent }) {
 
 /* ───────────────────────── add word ───────────────────────── */
 
-function AddWord({ onSave }) {
+function AddWord({ onSave, words = [], onViewList }) {
   const [srcLang, setSrcLang] = useState("en");
   const [tgtLang, setTgtLang] = useState("ko");
   const [word, setWord] = useState("");
   const [meaning, setMeaning] = useState("");
   const [saved, setSaved] = useState(false);
+
+  const dupes = findDuplicates(words, word, srcLang);
 
   const setSrc = (l) => {
     setSrcLang(l);
@@ -757,6 +764,46 @@ function AddWord({ onSave }) {
         </div>
       </div>
 
+      {dupes.length > 0 && (
+        <div className="vc-dup">
+          <div className="vc-dup-head">
+            <span aria-hidden="true">⚠️</span> 이미 저장한 단어예요
+          </div>
+          {dupes.map((d) => (
+            <div key={d.id} className="vc-dup-card">
+              <div className="vc-dup-tags">
+                <span style={{ color: LANGS[d.srcLang].tint }}>
+                  {LANGS[d.srcLang].tag}
+                </span>
+                <span className="vc-li-arrow">→</span>
+                <span style={{ color: LANGS[d.tgtLang].tint }}>
+                  {LANGS[d.tgtLang].tag}
+                </span>
+              </div>
+              <div className="vc-dup-body">
+                <div className="vc-dup-word">{d.word}</div>
+                <div className="vc-dup-mean">{d.meaning}</div>
+              </div>
+              <span className="vc-dup-due">{dueLabel(d.due)}</span>
+            </div>
+          ))}
+          <div className="vc-dup-actions">
+            {onViewList && (
+              <button className="vc-dup-btn" onClick={onViewList}>
+                저장된 카드 보기
+              </button>
+            )}
+            <button
+              className="vc-dup-btn primary"
+              disabled={!word.trim() || !meaning.trim()}
+              onClick={save}
+            >
+              그래도 새로 저장
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="vc-lookup">
         <button
           className="vc-lookupbtn papago"
@@ -797,10 +844,14 @@ function AddWord({ onSave }) {
 
       <button
         className="vc-cta wide"
-        disabled={!word.trim() || !meaning.trim()}
+        disabled={!word.trim() || !meaning.trim() || dupes.length > 0}
         onClick={save}
       >
-        {saved ? "저장됐어요 ✓" : "카드 저장"}
+        {saved
+          ? "저장됐어요 ✓"
+          : dupes.length > 0
+            ? "이미 저장된 단어예요"
+            : "카드 저장"}
       </button>
     </div>
   );

@@ -33,9 +33,13 @@ describe("speak (mobile robustness)", () => {
     expect(s.cancel).toHaveBeenCalledTimes(1);
     expect(s.speak).toHaveBeenCalledTimes(1);
   });
-  it("returns false with no text or synth", () => {
+  it("returns false with no text", () => {
     expect(speak("", "es-ES", fakeSynth())).toBe(false);
-    expect(speak("hi", "es-ES", null)).toBe(false);
+  });
+  it("falls back to audio (no native cancel/speak) when synth is missing", () => {
+    const s = fakeSynth();
+    speak("hola", "es-ES", null);
+    expect(s.speak).not.toHaveBeenCalled(); // did not use the (unused) synth
   });
 });
 

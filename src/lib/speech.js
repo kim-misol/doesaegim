@@ -39,12 +39,37 @@ export function primeSpeech(
   }
 }
 
+// Fallback for browsers without Web Speech synthesis (notably Firefox/Chrome
+// on iOS, which don't expose speechSynthesis at all). Plays a TTS audio clip.
+// Best-effort: must be called inside a user gesture on mobile.
+let audioEl = null;
+export function speakViaAudio(text, langCode) {
+  if (typeof Audio === "undefined") return false;
+  try {
+    const tl = (langCode || "en").split("-")[0];
+    const url =
+      "https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob" +
+      `&tl=${encodeURIComponent(tl)}&q=${encodeURIComponent(text.slice(0, 200))}`;
+    if (!audioEl) audioEl = new Audio();
+    audioEl.src = url;
+    const p = audioEl.play();
+    if (p && typeof p.catch === "function") p.catch(() => {});
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export function speak(
   text,
   langCode,
   synth = typeof window !== "undefined" ? window.speechSynthesis : null,
 ) {
-  if (!text || !synth) return false;
+  if (!text) return false;
+  // No Web Speech synthesis (iOS Firefox/Chrome) → audio fallback.
+  if (!synth || typeof synth.speak !== "function") {
+    return speakViaAudio(text, langCode);
+  }
   try {
     // Mobile engines often pause themselves; wake it up first.
     synth.resume?.();
@@ -63,7 +88,7 @@ export function speak(
     synth.speak(u);
     return true;
   } catch {
-    return false;
+    return speakViaAudio(text, langCode);
   }
 }
 

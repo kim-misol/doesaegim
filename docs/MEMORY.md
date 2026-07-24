@@ -13,6 +13,15 @@
 
 ---
 
+## 2026-07-24 · 중복 감지 앱 반영 + iOS Firefox 발음 폴백
+
+- 중복 감지(#1): `dedupe.js`의 `findDuplicates(words, word, srcLang)`(단어+단어언어, 대소문자/공백 무시) 순수 함수+테스트. AddWord에 실시간 경고 카드(저장된 뜻·언어·복습예정) + "그래도 새로 저장"/"저장된 카드 보기"(→list 탭). 중복 시 기본 CTA 비활성.
+- iOS Firefox 소리(#2): 원인 = iOS 서드파티 브라우저는 speechSynthesis 미지원(Safari만 됨). `speech.js`에 `speakViaAudio()`(Google translate_tts URL을 Audio로 재생) 폴백 추가; `speak`은 synth 없거나 예외 시 폴백. 첫 탭 언락은 기존 primeSpeech 유지.
+- 변경 파일: src/App.jsx, src/styles.css, src/lib/{speech,dedupe}.js(+tests). 총 92 그린, 빌드 OK.
+- 참고: translate_tts는 비공식 엔드포인트라 best-effort(구글이 막으면 실패 가능). 확실한 보장은 자체 TTS 프록시(비용/설정) 또는 Safari.
+
+---
+
 ## 2026-07-24 · 단어 수정 기능 + 모바일 발화 수정 + 중복 경고 시안
 
 - 단어 수정(#2): WordList에 인라인 편집 추가(연필 아이콘 → word/meaning 입력 + 저장/취소). commit으로 갱신 → 클라우드 동기화. SRS(box/due) 유지.

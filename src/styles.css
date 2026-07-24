@@ -833,6 +833,93 @@ body {
   cursor: default;
 }
 
+/* duplicate-word warning (add screen) */
+.vc-dup {
+  border-radius: 18px;
+  padding: 14px;
+  margin-bottom: 4px;
+  background: rgba(255, 207, 158, 0.07);
+  border: 1px solid rgba(255, 207, 158, 0.28);
+  animation: vc-fade 0.25s ease;
+}
+.vc-dup-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #ffcf9e;
+  margin-bottom: 12px;
+}
+.vc-dup-card {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 14px;
+  border-radius: 14px;
+  background: var(--lg-bg);
+  border: 1px solid var(--line);
+  box-shadow: var(--lg-shadow);
+}
+.vc-dup-card + .vc-dup-card {
+  margin-top: 8px;
+}
+.vc-dup-tags {
+  grid-row: 1 / 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-family: ui-monospace, Menlo, monospace;
+  font-size: 11px;
+  font-weight: 700;
+  gap: 1px;
+}
+.vc-dup-word {
+  font-size: 16px;
+  font-weight: 600;
+}
+.vc-dup-mean {
+  font-size: 13px;
+  color: var(--ink2);
+  margin-top: 1px;
+}
+.vc-dup-due {
+  grid-row: 1 / 3;
+  grid-column: 3;
+  font-size: 11px;
+  color: var(--ink2);
+  padding: 3px 9px;
+  border-radius: 99px;
+  background: rgba(255, 255, 255, 0.06);
+  white-space: nowrap;
+}
+.vc-dup-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+.vc-dup-btn {
+  flex: 1;
+  padding: 11px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 640;
+  cursor: pointer;
+  border: 1px solid var(--line);
+  background: var(--glass);
+  color: var(--ink);
+}
+.vc-dup-btn.primary {
+  background: linear-gradient(140deg, var(--v), var(--p));
+  border: none;
+  color: #fff;
+}
+.vc-dup-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
 /* inline word editor (word list) */
 .vc-listitem.editing {
   display: block;
