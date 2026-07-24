@@ -13,6 +13,15 @@
 
 ---
 
+## 2026-07-24 · Papago/Naver 바로가기 + 발음 언어 수정
+
+- 한 일: AddWord의 Claude 자동완성(번역/사전 AI)을 제거하고 **Papago 번역 · Naver 사전 바로가기 버튼**으로 교체(`lookup.js` — papagoUrl/naverDictUrl, 새 탭 오픈, API·비용 0). 발음(speech.js) 개선: pickVoice가 지역 정규화(underscore)→정확 매칭→기본언어 폴백→기기 내장(localService) 우선으로 선택하고, `speak`이 선택된 voice의 lang으로 utterance.lang을 맞춤. `hasVoiceFor` 추가. 테스트 lookup 5 + speech 5 (총 70 그린).
+- 결정/이유: Papago API는 유료 키+프록시, Naver 사전은 공식 API 없음 → 무료·안정적인 외부 링크 방식 선택(사용자 승인). 발음이 영어로 나던 건 voice 미선택/기기 음성 부재가 원인 → 로직 강화(단, OS에 해당 언어 음성이 없으면 설치 필요).
+- 변경 파일: src/App.jsx, src/styles.css, src/lib/lookup.js(+test), src/lib/speech.js(+test). translate.js는 미사용(잔존). 빌드 OK.
+- 후속: Naver es/it/de 사전 URL은 샌드박스에서 검증 불가 → 실기기에서 클릭 확인 필요. 자동완성 제거로 Anthropic 비용 0(원하면 ANTHROPIC secret 삭제 가능).
+
+---
+
 ## 2026-07-24 · 오늘 진행률 히어로(남은 수 + 링)
 
 - 한 일: Today 히어로를 글래스 카드로 바꾸고 남은 복습 수(큰 숫자) + 진행률 링(conic) 추가. 진행률 = passedToday/(passedToday+dueTotal). `dailyStats.js`(device-local 일일 카운터, 날짜 변경 시 자동 리셋) 신설 + 테스트 4개. Review에서 "기억했어요"(remembered) 채점 시 `onPass`로 카운트 bump.

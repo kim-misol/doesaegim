@@ -804,6 +804,51 @@ body {
   cursor: default;
 }
 
+/* Papago / Naver quick-lookup buttons */
+.vc-lookup {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.vc-lookupbtn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 13px;
+  border-radius: 15px;
+  border: 1px solid var(--line);
+  background: var(--glass);
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 640;
+  cursor: pointer;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28);
+  transition:
+    background 0.2s,
+    transform 0.12s,
+    border-color 0.2s;
+}
+.vc-lookupbtn:hover:not(:disabled) {
+  background: var(--glass2);
+  transform: translateY(-1px);
+}
+.vc-lookupbtn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.vc-lookupbtn.papago {
+  border-color: rgba(8, 199, 102, 0.4);
+}
+.vc-lookupbtn.naver {
+  border-color: rgba(3, 199, 90, 0.4);
+}
+.vc-lookupbtn span {
+  opacity: 0.55;
+  font-size: 12px;
+}
+
 .vc-note {
   font-size: 13px;
   padding: 10px 14px;

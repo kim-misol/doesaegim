@@ -29,9 +29,8 @@ import {
   mergeWords,
 } from "./lib/backup.js";
 import { speak } from "./lib/speech.js";
-import { fetchMeanings, isAutocompleteAvailable } from "./lib/translate.js";
+import { papagoUrl, naverDictUrl } from "./lib/lookup.js";
 
-const autocompleteEnabled = isAutocompleteAvailable();
 const cloudEnabled = isCloudConfigured();
 
 /* ───────────────────────── icons ───────────────────────── */
@@ -573,46 +572,24 @@ function AddWord({ onSave }) {
   const [tgtLang, setTgtLang] = useState("ko");
   const [word, setWord] = useState("");
   const [meaning, setMeaning] = useState("");
-  const [mode, setMode] = useState("translate");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [suggestions, setSuggestions] = useState([]);
   const [saved, setSaved] = useState(false);
 
   const setSrc = (l) => {
     setSrcLang(l);
     if (l === tgtLang) setTgtLang(otherLang(l));
-    setSuggestions([]);
   };
   const setTgt = (l) => {
     setTgtLang(l);
     if (l === srcLang) setSrcLang(otherLang(l));
-    setSuggestions([]);
   };
 
-  const autocomplete = async () => {
-    if (!word.trim()) return;
-    setLoading(true);
-    setError("");
-    setSuggestions([]);
-    try {
-      const r = await fetchMeanings(word.trim(), srcLang, tgtLang, mode);
-      if (r.length === 0) setError("뜻을 찾지 못했어요. 직접 입력해 주세요.");
-      setSuggestions(r);
-    } catch {
-      setError("자동완성에 실패했어요. 직접 입력할 수 있어요.");
-    } finally {
-      setLoading(false);
-    }
-  };
+  const openLookup = (url) => window.open(url, "_blank", "noopener,noreferrer");
 
   const save = () => {
     if (!word.trim() || !meaning.trim()) return;
     onSave(createWord({ srcLang, tgtLang, word, meaning }));
     setWord("");
     setMeaning("");
-    setSuggestions([]);
-    setError("");
     setSaved(true);
     setTimeout(() => setSaved(false), 1600);
   };
@@ -646,48 +623,22 @@ function AddWord({ onSave }) {
         </div>
       </div>
 
-      {autocompleteEnabled && (
-        <div className="vc-auto">
-          <div className="vc-seg">
-            <button
-              className={mode === "translate" ? "on" : ""}
-              onClick={() => setMode("translate")}
-            >
-              번역 <i>AI</i>
-            </button>
-            <button
-              className={mode === "dict" ? "on" : ""}
-              onClick={() => setMode("dict")}
-            >
-              사전 <i>AI</i>
-            </button>
-          </div>
-          <button
-            className="vc-fetch"
-            disabled={!word.trim() || loading}
-            onClick={autocomplete}
-          >
-            {loading ? "가져오는 중…" : "뜻 가져오기"}
-          </button>
-        </div>
-      )}
-
-      {error ? <div className="vc-note warn">{error}</div> : null}
-
-      {suggestions.length > 0 && (
-        <div className="vc-suggest">
-          {suggestions.map((s, i) => (
-            <button
-              key={i}
-              className="vc-glass vc-sugg"
-              onClick={() => setMeaning(s.meaning)}
-            >
-              <span className="vc-sugg-main">{s.meaning}</span>
-              {s.note ? <span className="vc-sugg-note">{s.note}</span> : null}
-            </button>
-          ))}
-        </div>
-      )}
+      <div className="vc-lookup">
+        <button
+          className="vc-lookupbtn papago"
+          disabled={!word.trim()}
+          onClick={() => openLookup(papagoUrl(word, srcLang, tgtLang))}
+        >
+          Papago 번역 <span aria-hidden="true">↗</span>
+        </button>
+        <button
+          className="vc-lookupbtn naver"
+          disabled={!word.trim()}
+          onClick={() => openLookup(naverDictUrl(word, srcLang))}
+        >
+          Naver 사전 <span aria-hidden="true">↗</span>
+        </button>
+      </div>
 
       <div className="vc-field">
         <label>뜻</label>
