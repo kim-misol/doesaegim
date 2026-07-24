@@ -5,6 +5,13 @@
 
 ---
 
+## 2026-07-24 · Makefile 추가
+- 한 일: Treximo 스타일을 참고해 `Makefile` 추가(install/dev/build/test/ci/supabase-*/deploy/clean).
+- 결정/이유: GitHub Pages 배포는 이미 `deploy.yml`이 main push 시 자동 처리 → `make deploy`는 SSH 없이 `ci`(test+build) 확인 후 `git push origin main`만 수행. `supabase-deploy`(translate 함수)는 별도 수동 배포 단계라 CI에 없음. lint 스크립트가 package.json에 없어 lint 타깃은 생략.
+- 변경 파일: Makefile, docs/MEMORY.md
+
+---
+
 ## 2026-07-24 · 클라우드 동기화 + 프록시 + 백업 (PLAN-0004)
 - 한 일: Supabase 원격 스토어 추가(`remoteStore.js` — load/save 인터페이스 유지, diff로 변경/삭제 행만 upsert/delete). `rows.js`(행↔단어 매핑), `sync.js`(diff), `backup.js`(JSON/CSV export·import + merge), `supabase.js`(클라이언트+매직링크 인증). App은 로그인 시 원격/미로그인·미설정 시 로컬로 graceful 전환. 헤더에 로그인 UI, 단어 화면에 백업 UI. `supabase/schema.sql`(RLS+인덱스), `supabase/functions/translate`(프록시, `--no-verify-jwt`+Origin 허용목록).
 - 결정/이유: due/created_at을 epoch ms `bigint`로 저장 → SRS(ms) 그대로, 타임존 버그 없음. 스토어 인터페이스 유지로 App 변경 최소화. anon 키·프록시는 공개라 데이터 보호는 RLS, 프록시 남용은 Origin+입력검증+Haiku/256으로 완화.
