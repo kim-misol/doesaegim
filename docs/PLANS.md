@@ -3,6 +3,25 @@
 새 항목은 맨 위에 추가합니다. 형식은 [`WORKFLOW.md`](WORKFLOW.md) 참고.
 
 ---
+## PLAN-0004 · 클라우드 동기화 + 번역 프록시 + 백업 (실사용화)
+- 날짜: 2026-07-24
+- 상태: done (코드·테스트·빌드 완료 / Supabase 프로젝트 셋업은 docs/SUPABASE.md 참고)
+- 목표: localStorage 단일 blob의 소실·비동기화 리스크를 없애고, 여러 기기에서 같은 데이터·서버 백업으로 실사용 가능하게 만든다. 번역 프록시를 실제로 붙이고 남용을 막는다.
+- 방향:
+  - 저장: Supabase(Postgres + Auth + RLS). 로그인 시 원격 스토어, 미로그인·미설정 시 기존 로컬 스토어로 graceful fallback. 스토어 인터페이스 `load()/save(words)` 유지 → App 변경 최소화.
+  - due/created_at은 epoch ms를 `bigint`로 저장 → SRS 로직(ms) 그대로, 타임존 버그 없음.
+  - 프록시: Supabase Edge Function `translate` — JWT 검증(로그인 사용자만) + 입력 검증 → 크레딧 남용 차단. translate.js 계약(body/`{t:[{m,n}]}`)과 호환.
+  - 백업: 순수 함수로 JSON/CSV export·import.
+- 인수 조건:
+  - [x] 로그인 후 카드가 Supabase에 행 단위로 동기화(upsert/삭제 diff) — remoteStore + 테스트
+  - [x] RLS로 본인 데이터만 접근 — schema.sql 정책
+  - [x] 미설정/미로그인 시 기존 로컬 저장 그대로 동작 — App 스토어 분기
+  - [x] JSON/CSV 내보내기·가져오기 — backup.js + BackupBar
+  - [x] 프록시 남용 완화 — Origin 허용목록 + 입력검증(계약상 클라 무변경 위해 --no-verify-jwt)
+- 건드릴 파일: src/lib/rows.js, sync.js, backup.js, supabase.js, remoteStore.js, auth.js (+ __tests__), src/App.jsx, supabase/schema.sql, supabase/functions/translate/index.ts, docs/*, .env.example, package.json
+- 테스트(먼저): 행↔단어 매핑 · diff(신규/변경/삭제) · JSON/CSV 왕복 · fake client로 원격 save의 upsert/delete 호출
+
+---
 ## PLAN-0003 · AI 자동완성 안전 처리
 - 날짜: 2026-06-27
 - 상태: done

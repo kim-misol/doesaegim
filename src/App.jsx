@@ -8,10 +8,21 @@ import {
   nextIntervalDays,
 } from "./lib/srs.js";
 import { createWordStore, resolveBackend } from "./lib/storage.js";
+import { createRemoteWordStore } from "./lib/remoteStore.js";
+import {
+  isCloudConfigured,
+  getSupabase,
+  currentUser,
+  onAuthChange,
+  signInWithEmail,
+  signOut,
+} from "./lib/supabase.js";
+import { wordsToJSON, wordsToCSV, wordsFromJSON, mergeWords } from "./lib/backup.js";
 import { speak } from "./lib/speech.js";
 import { fetchMeanings, isAutocompleteAvailable } from "./lib/translate.js";
 
 const autocompleteEnabled = isAutocompleteAvailable();
+const cloudEnabled = isCloudConfigured();
 
 /* ───────────────────────── icons ───────────────────────── */
 
@@ -46,29 +57,51 @@ export default function App() {
   const [ready, setReady] = useState(false);
   const [tab, setTab] = useState("today");
   const [session, setSession] = useState(null);
+  const [user, setUser] = useState(null);
   const storeRef = useRef(null);
 
+  // preload speech voices
   useEffect(() => {
     if (typeof window !== "undefined" && window.speechSynthesis) {
       window.speechSynthesis.getVoices();
       window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
     }
+  }, []);
+
+  // track auth state (cloud mode only)
+  useEffect(() => {
+    if (!cloudEnabled) return;
+    let unsub = () => {};
+    currentUser().then(setUser);
+    onAuthChange(setUser).then((fn) => {
+      unsub = fn;
+    });
+    return () => unsub();
+  }, []);
+
+  // resolve the right store on auth change (remote when signed in, else local)
+  useEffect(() => {
     let alive = true;
-    resolveBackend()
-      .then((backend) => {
-        storeRef.current = createWordStore(backend);
-        return storeRef.current.load();
-      })
-      .then((w) => {
-        if (alive) {
-          setWords(w);
-          setReady(true);
-        }
-      });
+    setReady(false);
+    (async () => {
+      let store;
+      if (cloudEnabled && user) {
+        const sb = await getSupabase();
+        store = createRemoteWordStore(sb, user.id);
+      } else {
+        store = createWordStore(await resolveBackend());
+      }
+      storeRef.current = store;
+      const w = await store.load().catch(() => []);
+      if (alive) {
+        setWords(w);
+        setReady(true);
+      }
+    })();
     return () => {
       alive = false;
     };
-  }, []);
+  }, [user]);
 
   const commit = useCallback((updater) => {
     setWords((prev) => {
@@ -91,6 +124,7 @@ export default function App() {
       <header className="vc-header">
         <div className="vc-wordmark">되새김</div>
         <div className="vc-sub">flashcards</div>
+        {cloudEnabled && <AccountBar user={user} />}
       </header>
 
       <main className="vc-main">
@@ -435,11 +469,17 @@ function WordList({ words, commit }) {
   const list = words.filter((w) => filter === "all" || w.srcLang === filter);
 
   if (words.length === 0) {
-    return <div className="vc-empty-state slim"><p>아직 저장된 단어가 없어요.</p></div>;
+    return (
+      <div className="vc-view">
+        <BackupBar words={words} commit={commit} />
+        <div className="vc-empty-state slim"><p>아직 저장된 단어가 없어요.</p></div>
+      </div>
+    );
   }
 
   return (
     <div className="vc-view">
+      <BackupBar words={words} commit={commit} />
       <div className="vc-chips">
         {["all", ...LANG_KEYS].map((f) => (
           <button key={f} className={`vc-chip ${filter === f ? "on" : ""}`} onClick={() => setFilter(f)}>
@@ -476,6 +516,87 @@ function WordList({ words, commit }) {
           </div>
         ))}
       </div>
+    </div>
+  );
+}
+
+/* ───────────────────── account (cloud sync) ───────────────────── */
+
+function AccountBar({ user }) {
+  const [email, setEmail] = useState("");
+  const [sent, setSent] = useState(false);
+
+  if (user) {
+    return (
+      <div className="vc-account">
+        <span className="vc-account-email">{user.email}</span>
+        <button className="vc-mini ghost" onClick={() => signOut()}>로그아웃</button>
+      </div>
+    );
+  }
+  return (
+    <div className="vc-account">
+      <input
+        className="vc-account-input"
+        type="email"
+        placeholder="이메일로 로그인·동기화"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+      />
+      <button
+        className="vc-mini"
+        disabled={!email.trim() || sent}
+        onClick={async () => {
+          const { error } = await signInWithEmail(email.trim());
+          if (!error) setSent(true);
+        }}
+      >
+        {sent ? "메일 확인" : "링크 받기"}
+      </button>
+    </div>
+  );
+}
+
+/* ───────────────────── backup (export / import) ───────────────────── */
+
+function BackupBar({ words, commit }) {
+  const download = (name, text, type) => {
+    const url = URL.createObjectURL(new Blob([text], { type }));
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = name;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const onImport = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const imported = wordsFromJSON(String(reader.result));
+        commit((prev) => mergeWords(prev, imported));
+      } catch (err) {
+        alert(err.message);
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = "";
+  };
+
+  return (
+    <div className="vc-backup">
+      <button className="vc-mini ghost" onClick={() => download("doesaegim.json", wordsToJSON(words), "application/json")}>
+        JSON 내보내기
+      </button>
+      <button className="vc-mini ghost" onClick={() => download("doesaegim.csv", wordsToCSV(words), "text/csv")}>
+        CSV
+      </button>
+      <label className="vc-mini ghost vc-import">
+        가져오기
+        <input type="file" accept=".json,application/json" onChange={onImport} hidden />
+      </label>
     </div>
   );
 }

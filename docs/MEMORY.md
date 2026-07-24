@@ -5,6 +5,14 @@
 
 ---
 
+## 2026-07-24 · 클라우드 동기화 + 프록시 + 백업 (PLAN-0004)
+- 한 일: Supabase 원격 스토어 추가(`remoteStore.js` — load/save 인터페이스 유지, diff로 변경/삭제 행만 upsert/delete). `rows.js`(행↔단어 매핑), `sync.js`(diff), `backup.js`(JSON/CSV export·import + merge), `supabase.js`(클라이언트+매직링크 인증). App은 로그인 시 원격/미로그인·미설정 시 로컬로 graceful 전환. 헤더에 로그인 UI, 단어 화면에 백업 UI. `supabase/schema.sql`(RLS+인덱스), `supabase/functions/translate`(프록시, `--no-verify-jwt`+Origin 허용목록).
+- 결정/이유: due/created_at을 epoch ms `bigint`로 저장 → SRS(ms) 그대로, 타임존 버그 없음. 스토어 인터페이스 유지로 App 변경 최소화. anon 키·프록시는 공개라 데이터 보호는 RLS, 프록시 남용은 Origin+입력검증+Haiku/256으로 완화.
+- 변경 파일: src/lib/{rows,sync,backup,supabase,remoteStore}.js (+__tests__), src/App.jsx, src/styles.css, supabase/*, docs/{PLANS,SUPABASE}.md, .env.example, package.json. 테스트 55개 그린, 빌드 OK.
+- 후속: 오프라인 큐/충돌 해결, 프록시 레이트리밋, 로컬→클라우드 자동 마이그레이션.
+
+---
+
 ## 2026-06-27 · AI 자동완성 안전 처리 (PLAN-0003)
 - 한 일: `translate.js`에서 Anthropic 직접 호출·API 키 코드 완전 제거. `getEndpoint(env)` / `isAutocompleteAvailable(env)` 추가. `fetchMeanings`는 `endpoint` 파라미터가 없으면 즉시 throw. `App.jsx`는 `isAutocompleteAvailable()` false면 번역·사전 토글과 "뜻 가져오기" 버튼을 숨김.
 - 결정/이유: 클라이언트에 API 키 포함 불가(보안). 자동완성은 `VITE_TRANSLATE_ENDPOINT` 환경변수로 프록시가 설정됐을 때만 동작. 프록시 미설정 시 AddWord는 직접입력 전용으로 graceful 동작.

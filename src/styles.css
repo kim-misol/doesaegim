@@ -250,3 +250,15 @@ body {
   .vc-card, .vc-view, .vc-progress i, .vc-cta, .vc-revbtn, .vc-speak { transition: none !important; animation: none !important; }
 }
 *:focus-visible { outline: 2px solid rgba(150, 170, 230, 0.7); outline-offset: 2px; }
+
+/* ── account bar (cloud sync) ── */
+.vc-account { display: flex; align-items: center; gap: 8px; margin-top: 10px; flex-wrap: wrap; justify-content: center; }
+.vc-account-email { font-size: 12px; opacity: 0.7; }
+.vc-account-input {
+  background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.14);
+  border-radius: 10px; padding: 6px 10px; color: inherit; font-size: 13px; min-width: 190px;
+}
+
+/* ── backup bar ── */
+.vc-backup { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+.vc-import { display: inline-flex; align-items: center; cursor: pointer; }
