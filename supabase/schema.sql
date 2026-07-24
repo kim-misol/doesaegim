@@ -9,8 +9,8 @@
 create table if not exists public.words (
   id          text primary key,                       -- client-generated id
   user_id     uuid not null references auth.users (id) on delete cascade,
-  src_lang    text not null check (src_lang in ('ko','en','fr')),
-  tgt_lang    text not null check (tgt_lang in ('ko','en','fr')),
+  src_lang    text not null check (src_lang in ('ko','en','es','it','de')),
+  tgt_lang    text not null check (tgt_lang in ('ko','en','es','it','de')),
   word        text not null check (char_length(word)    between 1 and 200),
   meaning     text not null check (char_length(meaning) between 1 and 500),
   box         int  not null default 0 check (box between 0 and 5),

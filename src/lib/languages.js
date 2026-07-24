@@ -2,10 +2,12 @@
 export const LANGS = {
   ko: { label: "한국어", code: "ko-KR", tag: "KO", tint: "#E8C39E" },
   en: { label: "English", code: "en-US", tag: "EN", tint: "#9EC1E8" },
-  fr: { label: "Français", code: "fr-FR", tag: "FR", tint: "#E89EB8" },
+  es: { label: "Español", code: "es-ES", tag: "ES", tint: "#E8A99E" },
+  it: { label: "Italiano", code: "it-IT", tag: "IT", tint: "#9EE8AE" },
+  de: { label: "Deutsch", code: "de-DE", tag: "DE", tint: "#C7B0E8" },
 };
 
-export const LANG_KEYS = ["ko", "en", "fr"];
+export const LANG_KEYS = ["ko", "en", "es", "it", "de"];
 
 export const isLang = (key) => LANG_KEYS.includes(key);
 

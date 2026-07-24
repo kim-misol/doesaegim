@@ -17,7 +17,7 @@
 // a personal app that + Haiku + max_tokens:256 keeps cost negligible. For
 // stronger limits, front it with per-user auth or a rate limiter.
 
-const LANGS = ["ko", "en", "fr"];
+const LANGS = ["ko", "en", "es", "it", "de"];
 const MODES = ["dict", "translate"];
 
 function allowlist(): string[] {

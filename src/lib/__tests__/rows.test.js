@@ -37,9 +37,9 @@ describe("rows mapping", () => {
     const w = rowToWord({
       id: "x",
       user_id: "u",
-      src_lang: "fr",
+      src_lang: "de",
       tgt_lang: "en",
-      word: "chat",
+      word: "Katze",
       meaning: "cat",
       box: "1",
       due: "1700000000000",

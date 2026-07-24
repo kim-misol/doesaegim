@@ -20,7 +20,7 @@ const words = [
   },
   {
     id: "2",
-    srcLang: "fr",
+    srcLang: "de",
     tgtLang: "ko",
     word: "chat, noir",
     meaning: '고양이 "검은"',

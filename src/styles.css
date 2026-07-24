@@ -505,10 +505,12 @@ body {
 }
 .vc-lp-opts {
   display: flex;
+  flex-wrap: wrap;
   gap: 6px;
 }
 .vc-lp-opt {
-  flex: 1;
+  flex: 1 1 40px;
+  min-width: 40px;
   padding: 11px 0;
   border-radius: 13px;
   border: 1px solid var(--line);

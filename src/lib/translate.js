@@ -4,6 +4,23 @@ export function getEndpoint(env = import.meta.env) {
   return env?.VITE_TRANSLATE_ENDPOINT ?? null;
 }
 
+export function getAnonKey(env = import.meta.env) {
+  return env?.VITE_SUPABASE_ANON_KEY ?? null;
+}
+
+// Supabase's function gateway needs an `apikey` header to route the request
+// even when the function itself skips JWT verification. Attach it (plus a
+// Bearer token, which the dashboard's own cURL example uses) whenever the
+// anon/publishable key is available. Harmless for non-Supabase endpoints.
+export function buildHeaders(anonKey) {
+  const headers = { "Content-Type": "application/json" };
+  if (anonKey) {
+    headers["apikey"] = anonKey;
+    headers["Authorization"] = `Bearer ${anonKey}`;
+  }
+  return headers;
+}
+
 export function isAutocompleteAvailable(env = import.meta.env) {
   return !!getEndpoint(env);
 }
@@ -51,6 +68,7 @@ export async function fetchMeanings(
     fetchImpl = typeof fetch !== "undefined" ? fetch : undefined,
     cache = memCache,
     endpoint = getEndpoint(),
+    anonKey = getAnonKey(),
   } = {},
 ) {
   if (!endpoint)
@@ -62,7 +80,7 @@ export async function fetchMeanings(
 
   const res = await fetchImpl(endpoint, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: buildHeaders(anonKey),
     body: JSON.stringify({
       word: word.trim(),
       srcLang,

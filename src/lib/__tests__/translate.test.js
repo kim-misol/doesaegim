@@ -6,6 +6,7 @@ import {
   fetchMeanings,
   getEndpoint,
   isAutocompleteAvailable,
+  buildHeaders,
 } from "../translate.js";
 
 describe("buildSystemPrompt", () => {
@@ -15,7 +16,26 @@ describe("buildSystemPrompt", () => {
     expect(p).toContain("한국어");
   });
   it("requests multiple senses in dict mode", () => {
-    expect(buildSystemPrompt("fr", "ko", "dict")).toMatch(/senses/i);
+    expect(buildSystemPrompt("de", "ko", "dict")).toMatch(/senses/i);
+  });
+  it("supports the newly added languages", () => {
+    const p = buildSystemPrompt("es", "it", "translate");
+    expect(p).toContain("Español");
+    expect(p).toContain("Italiano");
+  });
+});
+
+describe("buildHeaders", () => {
+  it("adds apikey + Authorization when anon key is present", () => {
+    const h = buildHeaders("sb_publishable_abc");
+    expect(h.apikey).toBe("sb_publishable_abc");
+    expect(h.Authorization).toBe("Bearer sb_publishable_abc");
+    expect(h["Content-Type"]).toBe("application/json");
+  });
+  it("omits auth headers when no key", () => {
+    const h = buildHeaders(null);
+    expect(h.apikey).toBeUndefined();
+    expect(h.Authorization).toBeUndefined();
   });
 });
 
@@ -52,8 +72,8 @@ describe("parseResponse", () => {
 
 describe("cacheKey", () => {
   it("is case- and whitespace-insensitive on the word", () => {
-    expect(cacheKey("  Dog ", "en", "fr", "translate")).toBe(
-      cacheKey("dog", "en", "fr", "translate"),
+    expect(cacheKey("  Dog ", "en", "de", "translate")).toBe(
+      cacheKey("dog", "en", "de", "translate"),
     );
   });
 });
@@ -94,12 +114,12 @@ describe("fetchMeanings", () => {
     const fetchImpl = vi.fn(async () =>
       okResponse('{"t":[{"m":"chien","n":""}]}'),
     );
-    const a = await fetchMeanings("dog", "en", "fr", "translate", {
+    const a = await fetchMeanings("dog", "en", "de", "translate", {
       fetchImpl,
       cache,
       endpoint: ENDPOINT,
     });
-    const b = await fetchMeanings("dog", "en", "fr", "translate", {
+    const b = await fetchMeanings("dog", "en", "de", "translate", {
       fetchImpl,
       cache,
       endpoint: ENDPOINT,
@@ -133,9 +153,22 @@ describe("fetchMeanings", () => {
     expect(fetchImpl.mock.calls[0][1].method).toBe("POST");
   });
 
+  it("sends the apikey header when an anon key is provided", async () => {
+    const fetchImpl = vi.fn(async () => okResponse('{"t":[{"m":"x","n":""}]}'));
+    await fetchMeanings("cat", "en", "ko", "translate", {
+      fetchImpl,
+      cache: new Map(),
+      endpoint: ENDPOINT,
+      anonKey: "sb_publishable_abc",
+    });
+    const headers = fetchImpl.mock.calls[0][1].headers;
+    expect(headers.apikey).toBe("sb_publishable_abc");
+    expect(headers.Authorization).toBe("Bearer sb_publishable_abc");
+  });
+
   it("throws when no endpoint is provided", async () => {
     await expect(
-      fetchMeanings("dog", "en", "fr", "translate", {
+      fetchMeanings("dog", "en", "de", "translate", {
         fetchImpl: vi.fn(),
         cache: new Map(),
         endpoint: null,

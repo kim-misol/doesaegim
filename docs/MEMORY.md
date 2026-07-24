@@ -5,6 +5,15 @@
 
 ---
 
+## 2026-07-24 · 언어 교체(fr→es/it/de) + 자동완성 버그 수정 + QC
+
+- 한 일: 지원 언어에서 프랑스어 제거, 스페인어·이탈리아어·독일어 추가(`languages.js`, `schema.sql`, 라이브 DB의 CHECK 제약 ALTER, Edge Function `LANGS` 재배포). 자동완성 실패 원인 수정 — `translate.js`가 Supabase 게이트웨이용 `apikey`+`Authorization`(anon 키) 헤더를 보내지 않아 401로 막히던 것을 `buildHeaders()`로 첨부. QC: LangPicker가 언어 5개를 한 줄에 못 담던 것을 `flex-wrap` + `min-width`로 해결.
+- 결정/이유: verify_jwt를 꺼도 게이트웨이는 프로젝트 라우팅용 `apikey`를 요구함(대시보드 cURL 예시가 근거). due/created_at ms 유지. 테스트 fr→de/es로 갱신.
+- 변경 파일: src/lib/languages.js, translate.js (+translate.test), src/lib/__tests__/{backup,rows}.test.js, src/styles.css, supabase/{schema.sql,functions/translate/index.ts}. 테스트 59개 그린, 빌드 OK.
+- 알려진 한계(인웹): 카카오/인스타 등 인앱 브라우저에선 매직링크가 외부 브라우저로 열려 세션이 분리됨 → 로그인 안 될 수 있음. 필요 시 OTP 6자리 코드 방식으로 전환 검토.
+
+---
+
 ## 2026-07-24 · Makefile 추가 + ESLint/Prettier 도입
 
 - 한 일: Treximo 스타일을 참고해 `Makefile` 추가(install/dev/build/test/lint/format/ci/supabase-*/deploy/clean). ESLint 9(flat config, `eslint.config.js`) + Prettier(`.prettierrc.json`) 신규 설치, `npm run lint`/`format`/`format:check` 스크립트 추가. `ci.yml`에 `npm run lint` + `npm run format:check` 단계 추가. `make ci` = lint + format-check + test + build.
