@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>되새김 · 시안 D — Neo Dark Kinetic</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@1.3.9/dist/web/static/pretendard.min.css" />
+<style>
+  :root{
+    --bg:#0b0b0e; --panel:#141419; --panel2:#1b1b22; --line:#26262e;
+    --ink:#f4f4f6; --ink2:#8b8b98; --lime:#c8ff2f; --violet:#7c5cff; --pink:#ff5c9d;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Space Grotesk',Pretendard,system-ui,sans-serif;background:#050507;color:var(--ink);
+    min-height:100vh;display:flex;flex-direction:column;align-items:center;gap:26px;padding:40px 16px 64px}
+  .caption{max-width:760px;text-align:center}
+  .badge{display:inline-block;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#050507;font-weight:700;
+    background:var(--lime);border-radius:99px;padding:6px 14px;margin-bottom:14px}
+  .caption h1{font-size:27px;font-weight:700;letter-spacing:-.02em}
+  .caption p{color:#8b8b98;margin-top:8px;font-size:14px;line-height:1.6}
+  .stage{display:flex;gap:28px;flex-wrap:wrap;justify-content:center}
+
+  .phone{width:340px;height:720px;border-radius:42px;overflow:hidden;position:relative;background:var(--bg);
+    border:1px solid #1c1c22;box-shadow:0 40px 90px -34px rgba(124,92,255,.5)}
+  .screen{height:100%;padding:24px 20px 96px;display:flex;flex-direction:column;gap:14px}
+
+  .top{display:flex;align-items:center;justify-content:space-between}
+  .wordmark{font-weight:700;font-size:20px;letter-spacing:-.01em}
+  .streak{display:flex;align-items:center;gap:6px;font-family:'Space Mono';font-size:13px;font-weight:700;color:var(--lime);
+    background:rgba(200,255,47,.1);border:1px solid rgba(200,255,47,.28);border-radius:99px;padding:5px 11px}
+
+  .hero{border-radius:26px;padding:22px;background:linear-gradient(135deg,var(--violet),var(--pink));position:relative;overflow:hidden;color:#fff}
+  .hero::after{content:"";position:absolute;inset:0;background:radial-gradient(120px 120px at 85% 15%,rgba(255,255,255,.35),transparent)}
+  .hero .lbl{font-size:12px;font-weight:600;opacity:.9;position:relative;z-index:2}
+  .hero .num{font-family:'Space Mono';font-weight:700;font-size:70px;line-height:1;letter-spacing:-.03em;position:relative;z-index:2;margin:2px 0}
+  .hero .sub{font-size:12.5px;opacity:.92;position:relative;z-index:2}
+  .hero .go{position:absolute;right:18px;bottom:18px;z-index:2;background:#0b0b0e;color:#fff;border-radius:14px;
+    padding:11px 16px;font-weight:700;font-size:13px;display:flex;align-items:center;gap:8px}
+
+  .prog{display:flex;gap:6px;margin:2px 0}
+  .prog i{flex:1;height:6px;border-radius:99px;background:var(--panel2)}
+  .prog i.f{background:var(--lime)}
+
+  .seclbl{font-size:11px;color:var(--ink2);letter-spacing:.1em;text-transform:uppercase;margin:4px 2px -2px}
+  .row{display:flex;align-items:center;gap:14px;background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:14px}
+  .row .tag{font-family:'Space Mono';font-weight:700;font-size:13px;width:44px;height:44px;border-radius:12px;display:grid;place-items:center;color:#050507}
+  .t-es{background:var(--lime)} .t-en{background:var(--violet);color:#fff} .t-it{background:var(--pink);color:#fff} .t-de{background:#3a3a44;color:var(--ink)}
+  .row .nm{flex:1}
+  .row .nm b{font-weight:600;font-size:15px}
+  .row .nm span{display:block;font-size:12px;color:var(--ink2);margin-top:1px}
+  .cnt{font-family:'Space Mono';font-weight:700;font-size:16px;color:var(--lime)}
+  .cnt.z{color:var(--ink2);font-size:12px}
+
+  .tabbar{position:absolute;left:16px;right:16px;bottom:16px;height:62px;border-radius:20px;background:rgba(20,20,26,.85);
+    backdrop-filter:blur(14px);border:1px solid var(--line);display:flex;align-items:center;justify-content:space-around}
+  .tab{display:flex;flex-direction:column;align-items:center;gap:5px;font-size:11px;color:var(--ink2);font-weight:600}
+  .tab .ic{width:22px;height:22px;border-radius:7px;background:var(--panel2)}
+  .tab.on{color:var(--lime)} .tab.on .ic{background:var(--lime)}
+
+  /* review */
+  .rc{flex:1;display:flex;flex-direction:column;justify-content:center;gap:16px}
+  .flip{border-radius:26px;padding:34px 24px;min-height:320px;background:var(--panel);border:1px solid var(--line);
+    display:flex;flex-direction:column;justify-content:center;gap:14px;text-align:center;position:relative;overflow:hidden}
+  .flip::before{content:"";position:absolute;left:0;top:0;right:0;height:4px;background:linear-gradient(90deg,var(--lime),var(--violet),var(--pink))}
+  .flip .ftag{font-family:'Space Mono';font-size:12px;color:var(--lime);font-weight:700;letter-spacing:.08em}
+  .flip .word{font-size:42px;font-weight:700;letter-spacing:-.02em}
+  .flip .ipa{font-family:'Space Mono';font-size:13px;color:var(--ink2)}
+  .flip .dv{width:100%;height:1px;background:var(--line)}
+  .flip .mean{font-size:23px;font-weight:600;color:#e9e9f2}
+  .actions{display:flex;gap:12px}
+  .b{flex:1;padding:16px;border-radius:16px;font-weight:700;font-size:14px;text-align:center;border:1px solid var(--line);background:var(--panel2);color:var(--ink)}
+  .b.yes{background:var(--lime);color:#050507;border:none}
+  .b small{display:block;font-weight:500;font-size:11px;opacity:.7;margin-top:2px}
+  .b.yes small{opacity:.8}
+</style>
+</head>
+<body>
+  <div class="caption">
+    <span class="badge">Concept D · Neo Dark Kinetic</span>
+    <h1>네오 다크 키네틱 — 에너지 있는 학습 앱</h1>
+    <p>Linear의 정제된 다크 + Duolingo의 게임화 에너지. 니어블랙 패널, 비비드 그라디언트 히어로, 모노스페이스 넘버럴과 스트릭·프로그레스로 동기 부여. 스포티하고 빠른 느낌.</p>
+  </div>
+  <div class="stage">
+    <!-- Today -->
+    <div class="phone">
+      <div class="screen">
+        <div class="top"><div class="wordmark">되새김</div><div class="streak">🔥 7일</div></div>
+        <div class="hero">
+          <div class="lbl">오늘 복습</div>
+          <div class="num">12</div>
+          <div class="sub">5개 언어 · 오늘도 가볍게</div>
+          <div class="go">시작 →</div>
+        </div>
+        <div class="prog"><i class="f"></i><i class="f"></i><i class="f"></i><i></i><i></i></div>
+        <div class="seclbl">Languages</div>
+        <div class="row"><span class="tag t-es">ES</span><div class="nm"><b>Español</b><span>스페인어 · 12개</span></div><span class="cnt">5</span></div>
+        <div class="row"><span class="tag t-en">EN</span><div class="nm"><b>English</b><span>영어 · 30개</span></div><span class="cnt">4</span></div>
+        <div class="row"><span class="tag t-it">IT</span><div class="nm"><b>Italiano</b><span>이탈리아어 · 9개</span></div><span class="cnt">3</span></div>
+        <div class="row"><span class="tag t-de">DE</span><div class="nm"><b>Deutsch</b><span>독일어 · 15개</span></div><span class="cnt z">완료</span></div>
+      </div>
+      <div class="tabbar">
+        <div class="tab on"><div class="ic"></div>오늘</div>
+        <div class="tab"><div class="ic"></div>추가</div>
+        <div class="tab"><div class="ic"></div>단어</div>
+      </div>
+    </div>
+
+    <!-- Review -->
+    <div class="phone">
+      <div class="screen">
+        <div class="top"><div class="wordmark" style="font-size:15px;color:var(--ink2)">← 나가기</div><div class="streak">3장 남음</div></div>
+        <div class="rc">
+          <div class="flip">
+            <div class="ftag">ESPAÑOL</div>
+            <div class="word">resiliencia</div>
+            <div class="ipa">/re.si.ˈljen.θja/</div>
+            <div class="dv"></div>
+            <div class="mean">회복력, 회복탄력성</div>
+          </div>
+          <div class="actions">
+            <div class="b">못 외웠어요<small>오늘 다시</small></div>
+            <div class="b yes">기억했어요<small>3일 후</small></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

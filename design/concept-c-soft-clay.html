@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>되새김 · 시안 C — Soft Clay</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@1.3.9/dist/web/static/pretendard.min.css" />
+<style>
+  :root{
+    --bg:#f0e9df; --card:#f7f1e8; --ink:#4a3f35; --ink2:#9b8d7d; --line:#e7ddcf;
+    --peach:#ff9d7a; --mint:#7bd7b0; --sky:#8bb8f0; --lilac:#c3a6f0; --sun:#ffcf6b;
+    --sh-dark:#d3c8b8; --sh-light:#fffdf7;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Nunito',Pretendard,system-ui,sans-serif;background:var(--bg);color:var(--ink);
+    min-height:100vh;display:flex;flex-direction:column;align-items:center;gap:26px;padding:40px 16px 64px}
+  .caption{max-width:760px;text-align:center}
+  .badge{display:inline-block;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#e67a4f;font-weight:800;
+    background:#ffe6d8;border-radius:99px;padding:6px 14px;margin-bottom:14px}
+  .caption h1{font-size:27px;font-weight:900;letter-spacing:-.01em}
+  .caption p{color:var(--ink2);margin-top:8px;font-size:14px;line-height:1.6}
+  .stage{display:flex;gap:28px;flex-wrap:wrap;justify-content:center}
+
+  .phone{width:340px;height:720px;border-radius:48px;overflow:hidden;position:relative;background:var(--bg);
+    box-shadow:0 40px 80px -34px rgba(150,120,80,.55), inset 6px 6px 14px var(--sh-light), inset -6px -6px 14px var(--sh-dark)}
+  .screen{height:100%;padding:26px 22px 100px;display:flex;flex-direction:column;gap:18px}
+
+  .top{display:flex;align-items:center;justify-content:space-between}
+  .wordmark{font-weight:900;font-size:22px}
+  .avatar{width:40px;height:40px;border-radius:50%;background:var(--bg);
+    box-shadow:4px 4px 8px var(--sh-dark),-4px -4px 8px var(--sh-light)}
+
+  .hero{border-radius:30px;padding:24px;background:var(--bg);
+    box-shadow:8px 8px 18px var(--sh-dark),-8px -8px 18px var(--sh-light);position:relative;overflow:hidden}
+  .blob{position:absolute;right:-10px;top:-10px;width:100px;height:100px;border-radius:42% 58% 60% 40%/45% 45% 55% 55%;
+    background:linear-gradient(140deg,var(--peach),var(--sun));opacity:.85}
+  .hero .lbl{font-size:13px;color:var(--ink2);font-weight:700}
+  .hero .num{font-size:60px;font-weight:900;line-height:1;margin:4px 0}
+  .hero .sub{font-size:13px;color:var(--ink2);font-weight:600}
+
+  .seclbl{font-size:13px;color:var(--ink2);font-weight:800;margin:2px 4px -4px}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .clay{border-radius:24px;padding:16px;background:var(--bg);display:flex;flex-direction:column;gap:10px;
+    box-shadow:6px 6px 14px var(--sh-dark),-6px -6px 14px var(--sh-light)}
+  .chip{width:44px;height:44px;border-radius:16px;display:grid;place-items:center;font-weight:900;color:#fff;font-size:14px;
+    box-shadow:inset 2px 2px 4px rgba(255,255,255,.4),3px 3px 8px rgba(150,120,80,.3)}
+  .c-es{background:linear-gradient(140deg,var(--peach),#ff7d9c)}
+  .c-en{background:linear-gradient(140deg,var(--sky),#6f9df0)}
+  .c-it{background:linear-gradient(140deg,var(--mint),#57c79a)}
+  .c-de{background:linear-gradient(140deg,var(--lilac),#a889e6)}
+  .clay .name{font-weight:800;font-size:15px}
+  .clay .meta{font-size:12px;color:var(--ink2);font-weight:600}
+  .badgepill{align-self:flex-start;font-size:12px;font-weight:800;padding:5px 12px;border-radius:99px;
+    background:var(--bg);box-shadow:inset 3px 3px 6px var(--sh-dark),inset -3px -3px 6px var(--sh-light);color:var(--ink2)}
+  .badgepill.on{color:#e67a4f}
+
+  .tabbar{position:absolute;left:20px;right:20px;bottom:18px;height:66px;border-radius:26px;background:var(--bg);
+    box-shadow:6px 6px 16px var(--sh-dark),-6px -6px 16px var(--sh-light);display:flex;align-items:center;justify-content:space-around}
+  .tab{display:flex;flex-direction:column;align-items:center;gap:6px;font-size:12px;font-weight:700;color:var(--ink2)}
+  .tab .ic{width:26px;height:26px;border-radius:10px;background:var(--bg);box-shadow:inset 2px 2px 5px var(--sh-dark),inset -2px -2px 5px var(--sh-light)}
+  .tab.on{color:#e67a4f}
+  .tab.on .ic{background:linear-gradient(140deg,var(--peach),var(--sun));box-shadow:3px 3px 8px rgba(230,120,80,.4)}
+
+  /* review */
+  .rc{flex:1;display:flex;flex-direction:column;justify-content:center;gap:20px}
+  .flip{border-radius:34px;padding:38px 26px;min-height:310px;background:var(--card);text-align:center;
+    display:flex;flex-direction:column;justify-content:center;gap:14px;
+    box-shadow:12px 12px 28px var(--sh-dark),-12px -12px 28px var(--sh-light)}
+  .flip .ftag{font-weight:800;color:#e67a4f;font-size:13px}
+  .flip .word{font-size:40px;font-weight:900;letter-spacing:-.01em}
+  .flip .ipa{font-size:14px;color:var(--ink2);font-weight:600}
+  .flip .dv{width:44px;height:5px;border-radius:99px;background:var(--sh-dark);align-self:center}
+  .flip .mean{font-size:23px;font-weight:800}
+  .actions{display:flex;gap:14px}
+  .b{flex:1;padding:17px;border-radius:22px;font-weight:800;font-size:14px;text-align:center;background:var(--bg);
+    box-shadow:6px 6px 14px var(--sh-dark),-6px -6px 14px var(--sh-light)}
+  .b.yes{background:linear-gradient(140deg,var(--mint),#5ec79a);color:#fff;box-shadow:6px 6px 16px rgba(90,180,140,.5)}
+  .b small{display:block;font-weight:600;font-size:11px;opacity:.8;margin-top:2px}
+</style>
+</head>
+<body>
+  <div class="caption">
+    <span class="badge">Concept C · Soft Clay</span>
+    <h1>소프트 클레이 — 만지고 싶은 촉각 UI</h1>
+    <p>뉴모피즘/클레이모피즘의 2026 버전. 따뜻한 파스텔, 부드러운 이중 그림자로 만든 입체 버튼과 카드, 유기적 블롭. 친근하고 손맛 나는 학습 앱 무드. (연속 학습·게임화와 잘 어울림)</p>
+  </div>
+  <div class="stage">
+    <!-- Today -->
+    <div class="phone">
+      <div class="screen">
+        <div class="top"><div class="wordmark">되새김</div><div class="avatar"></div></div>
+        <div class="hero">
+          <div class="blob"></div>
+          <div class="lbl">오늘 복습</div>
+          <div class="num">12</div>
+          <div class="sub">카드가 기다리고 있어요 🌱</div>
+        </div>
+        <div class="seclbl">언어별 복습</div>
+        <div class="grid">
+          <div class="clay"><div class="chip c-es">ES</div><div class="name">Español</div><span class="badgepill on">5 복습</span></div>
+          <div class="clay"><div class="chip c-en">EN</div><div class="name">English</div><span class="badgepill on">4 복습</span></div>
+          <div class="clay"><div class="chip c-it">IT</div><div class="name">Italiano</div><span class="badgepill on">3 복습</span></div>
+          <div class="clay"><div class="chip c-de">DE</div><div class="name">Deutsch</div><span class="badgepill">완료</span></div>
+        </div>
+      </div>
+      <div class="tabbar">
+        <div class="tab on"><div class="ic"></div>오늘</div>
+        <div class="tab"><div class="ic"></div>추가</div>
+        <div class="tab"><div class="ic"></div>단어</div>
+      </div>
+    </div>
+
+    <!-- Review -->
+    <div class="phone">
+      <div class="screen">
+        <div class="top"><div class="wordmark" style="font-size:16px;color:var(--ink2)">← 나가기</div><div class="sub" style="color:var(--ink2);font-weight:700">3장 남음</div></div>
+        <div class="rc">
+          <div class="flip">
+            <div class="ftag">Español</div>
+            <div class="word">resiliencia</div>
+            <div class="ipa">/re.si.ˈljen.θja/</div>
+            <div class="dv"></div>
+            <div class="mean">회복력, 회복탄력성</div>
+          </div>
+          <div class="actions">
+            <div class="b">못 외웠어요<small>오늘 다시</small></div>
+            <div class="b yes">기억했어요<small>3일 후</small></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
