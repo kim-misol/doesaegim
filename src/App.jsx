@@ -820,6 +820,7 @@ function AccountBar({ user }) {
 /* ───────────────────── backup (export / import) ───────────────────── */
 
 function BackupBar({ words, commit }) {
+  const [open, setOpen] = useState(false);
   const download = (name, text, type) => {
     const url = URL.createObjectURL(new Blob([text], { type }));
     const a = document.createElement("a");
@@ -846,30 +847,51 @@ function BackupBar({ words, commit }) {
   };
 
   return (
-    <div className="vc-backup">
+    <div className={`vc-bk ${open ? "open" : ""}`}>
       <button
-        className="vc-mini ghost"
-        onClick={() =>
-          download("doesaegim.json", wordsToJSON(words), "application/json")
-        }
+        className="vc-bk-head"
+        onClick={() => setOpen((o) => !o)}
+        aria-expanded={open}
       >
-        JSON 내보내기
+        <span className="vc-bk-ic">💾</span>
+        <span className="vc-bk-title">백업 · 복원</span>
+        <span className="vc-bk-chev">›</span>
       </button>
-      <button
-        className="vc-mini ghost"
-        onClick={() => download("doesaegim.csv", wordsToCSV(words), "text/csv")}
-      >
-        CSV
-      </button>
-      <label className="vc-mini ghost vc-import">
-        가져오기
-        <input
-          type="file"
-          accept=".json,application/json"
-          onChange={onImport}
-          hidden
-        />
-      </label>
+
+      {open && (
+        <div className="vc-bk-body">
+          <p className="vc-bk-desc">
+            기기를 바꾸거나 브라우저를 정리해도 단어를 잃지 않도록 파일로 저장해요.
+          </p>
+          <div className="vc-bk-btns">
+            <button
+              className="vc-bk-btn primary"
+              onClick={() =>
+                download("doesaegim.json", wordsToJSON(words), "application/json")
+              }
+            >
+              ⬇ 내 단어 백업
+            </button>
+            <label className="vc-bk-btn">
+              ⬆ 불러오기
+              <input
+                type="file"
+                accept=".json,application/json"
+                onChange={onImport}
+                hidden
+              />
+            </label>
+          </div>
+          <button
+            className="vc-bk-more"
+            onClick={() =>
+              download("doesaegim.csv", wordsToCSV(words), "text/csv")
+            }
+          >
+            엑셀용 CSV로 내보내기
+          </button>
+        </div>
+      )}
     </div>
   );
 }

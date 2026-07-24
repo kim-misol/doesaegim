@@ -1132,15 +1132,106 @@ body {
   color: #fff;
 }
 
-/* ── backup bar ── */
-.vc-backup {
+/* ── backup · restore (collapsible, collapsed by default) ── */
+.vc-bk {
   display: flex;
-  gap: 8px;
-  margin-bottom: 12px;
-  flex-wrap: wrap;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 14px;
 }
-.vc-import {
+.vc-bk-head {
   display: inline-flex;
   align-items: center;
+  gap: 8px;
+  padding: 8px 13px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--glass);
+  color: var(--ink2);
+  font-size: 13px;
+  font-weight: 600;
   cursor: pointer;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28);
+  transition:
+    background 0.2s,
+    color 0.2s;
+}
+.vc-bk-head:hover {
+  background: var(--glass2);
+  color: var(--ink);
+}
+.vc-bk-ic {
+  font-size: 14px;
+}
+.vc-bk-chev {
+  opacity: 0.65;
+  transition: transform 0.2s;
+}
+.vc-bk.open .vc-bk-chev {
+  transform: rotate(90deg);
+}
+.vc-bk-body {
+  width: 100%;
+  background: var(--lg-bg);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 16px;
+  box-shadow: var(--lg-shadow);
+  animation: vc-fade 0.25s ease;
+}
+.vc-bk-desc {
+  font-size: 12.5px;
+  color: var(--ink2);
+  line-height: 1.5;
+  margin: 0 0 14px;
+}
+.vc-bk-btns {
+  display: flex;
+  gap: 8px;
+}
+.vc-bk-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 12px;
+  border-radius: 13px;
+  font-size: 14px;
+  font-weight: 640;
+  cursor: pointer;
+  border: 1px solid var(--line);
+  background: var(--glass);
+  color: var(--ink);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28);
+  transition:
+    background 0.2s,
+    transform 0.12s;
+}
+.vc-bk-btn:hover {
+  transform: translateY(-1px);
+}
+.vc-bk-btn.primary {
+  background: linear-gradient(140deg, var(--v), var(--p));
+  border: none;
+  color: #fff;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.4),
+    0 12px 26px -14px rgba(139, 123, 255, 0.8);
+}
+.vc-bk-more {
+  display: block;
+  width: 100%;
+  margin-top: 12px;
+  background: none;
+  border: none;
+  color: var(--ink2);
+  font-size: 12px;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+.vc-bk-more:hover {
+  color: var(--ink);
 }
