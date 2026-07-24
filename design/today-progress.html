@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>되새김 · 오늘 진행률 히어로</title>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@1.3.9/dist/web/static/pretendard.min.css"
+    />
+    <style>
+      :root {
+        --ink: #f3f5ff;
+        --ink2: rgba(228, 232, 255, 0.62);
+        --line: rgba(255, 255, 255, 0.14);
+        --a: #a7ff5b;
+        --lg:
+          radial-gradient(
+            120% 62% at 30% -12%,
+            rgba(255, 255, 255, 0.16),
+            transparent 55%
+          ),
+          linear-gradient(
+            155deg,
+            rgba(255, 255, 255, 0.12),
+            rgba(255, 255, 255, 0.035)
+          );
+      }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        font-family: Pretendard, system-ui, sans-serif;
+        color: var(--ink);
+        background: radial-gradient(
+          1000px 600px at 50% -10%,
+          #141a33,
+          #05060d 62%
+        );
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 22px;
+        padding: 44px 18px;
+      }
+      h1 {
+        font-size: 22px;
+        font-weight: 800;
+      }
+      p.sub {
+        color: #8b93b5;
+        font-size: 14px;
+        margin-top: 6px;
+        text-align: center;
+        max-width: 560px;
+      }
+      .row {
+        display: flex;
+        gap: 20px;
+        flex-wrap: wrap;
+        justify-content: center;
+        margin-top: 12px;
+      }
+      .col {
+        width: 300px;
+      }
+      .cap {
+        font-size: 12px;
+        color: #8b93b5;
+        text-align: center;
+        margin-bottom: 10px;
+        letter-spacing: 0.02em;
+      }
+      .hero {
+        position: relative;
+        text-align: left;
+        padding: 24px 26px 26px;
+        border-radius: 24px;
+        border: 1px solid var(--line);
+        background: var(--lg);
+        backdrop-filter: blur(20px) saturate(1.5);
+        box-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, 0.5),
+          inset 0 -14px 26px -18px rgba(0, 0, 0, 0.55),
+          0 18px 40px -26px rgba(90, 70, 220, 0.45);
+      }
+      .lbl {
+        font-size: 12.5px;
+        color: var(--ink2);
+      }
+      .num {
+        font-size: 66px;
+        font-weight: 800;
+        letter-spacing: -0.04em;
+        line-height: 1;
+        margin: 4px 0 2px;
+        background: linear-gradient(90deg, #fff, #c9d0ff, #fff);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+      .s {
+        font-size: 13px;
+        color: var(--ink2);
+      }
+      .ring {
+        position: absolute;
+        right: 22px;
+        top: 22px;
+        width: 68px;
+        height: 68px;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        background: conic-gradient(
+          from -90deg,
+          var(--a) calc(var(--pct) * 1%),
+          rgba(255, 255, 255, 0.12) 0
+        );
+        filter: drop-shadow(0 0 10px rgba(167, 255, 91, 0.35));
+      }
+      .ring i {
+        width: 52px;
+        height: 52px;
+        border-radius: 50%;
+        background: #0b0d18;
+        display: grid;
+        place-items: center;
+        font-size: 13px;
+        font-weight: 700;
+        font-style: normal;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>오늘 진행률 히어로</h1>
+    <p class="sub">
+      남은 복습 카드 수(큰 숫자) + 진행률 링. 진행률 = 오늘 통과한 카드 ÷ (통과
+      + 남음). 카드를 "기억했어요"로 넘길 때마다 링이 차오릅니다.
+    </p>
+    <div class="row">
+      <div class="col">
+        <div class="cap">아침 · 시작 전 (0%)</div>
+        <div class="hero" style="--pct: 0">
+          <div class="ring"><i>0%</i></div>
+          <div class="lbl">오늘 복습</div>
+          <div class="num">12</div>
+          <div class="s">0장 완료 · 12장 남음</div>
+        </div>
+      </div>
+      <div class="col">
+        <div class="cap">진행 중 (42%)</div>
+        <div class="hero" style="--pct: 42">
+          <div class="ring"><i>42%</i></div>
+          <div class="lbl">오늘 복습</div>
+          <div class="num">7</div>
+          <div class="s">5장 완료 · 7장 남음</div>
+        </div>
+      </div>
+      <div class="col">
+        <div class="cap">완료 (100%)</div>
+        <div class="hero" style="--pct: 100">
+          <div class="ring"><i>100%</i></div>
+          <div class="lbl">오늘 복습</div>
+          <div class="num">0</div>
+          <div class="s">오늘 복습 끝났어요 🎉</div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

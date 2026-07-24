@@ -1,119 +1,391 @@
 <!doctype html>
 <html lang="ko">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>되새김 · 시안 B — Editorial Bold</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,900&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@1.3.9/dist/web/static/pretendard.min.css" />
-<style>
-  :root{ --paper:#f3efe6; --ink:#161310; --ink2:#6b6459; --accent:#ff4d2e; --line:#d8d1c2; --card:#fbf9f3; }
-  *{box-sizing:border-box;margin:0;padding:0}
-  body{font-family:'Space Grotesk',Pretendard,system-ui,sans-serif;background:#e7e1d4;color:var(--ink);
-    min-height:100vh;display:flex;flex-direction:column;align-items:center;gap:26px;padding:40px 16px 64px}
-  .caption{max-width:760px;text-align:center}
-  .badge{display:inline-block;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);
-    border:1px solid var(--accent);border-radius:0;padding:5px 12px;margin-bottom:14px;font-weight:700}
-  .caption h1{font-family:'Fraunces',serif;font-size:30px;font-weight:900;letter-spacing:-.01em}
-  .caption p{color:#6b6459;margin-top:8px;font-size:14px;line-height:1.6}
-  .stage{display:flex;gap:28px;flex-wrap:wrap;justify-content:center}
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>되새김 · 시안 B — Editorial Bold</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,900&family=Space+Grotesk:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@1.3.9/dist/web/static/pretendard.min.css"
+    />
+    <style>
+      :root {
+        --paper: #f3efe6;
+        --ink: #161310;
+        --ink2: #6b6459;
+        --accent: #ff4d2e;
+        --line: #d8d1c2;
+        --card: #fbf9f3;
+      }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        font-family: "Space Grotesk", Pretendard, system-ui, sans-serif;
+        background: #e7e1d4;
+        color: var(--ink);
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 26px;
+        padding: 40px 16px 64px;
+      }
+      .caption {
+        max-width: 760px;
+        text-align: center;
+      }
+      .badge {
+        display: inline-block;
+        font-size: 11px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--accent);
+        border: 1px solid var(--accent);
+        border-radius: 0;
+        padding: 5px 12px;
+        margin-bottom: 14px;
+        font-weight: 700;
+      }
+      .caption h1 {
+        font-family: "Fraunces", serif;
+        font-size: 30px;
+        font-weight: 900;
+        letter-spacing: -0.01em;
+      }
+      .caption p {
+        color: #6b6459;
+        margin-top: 8px;
+        font-size: 14px;
+        line-height: 1.6;
+      }
+      .stage {
+        display: flex;
+        gap: 28px;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
 
-  .phone{width:340px;height:720px;border-radius:40px;overflow:hidden;position:relative;background:var(--paper);
-    border:1px solid #cfc7b6;box-shadow:0 40px 80px -34px rgba(60,45,30,.5)}
-  .screen{height:100%;padding:26px 22px 96px;display:flex;flex-direction:column;gap:18px}
+      .phone {
+        width: 340px;
+        height: 720px;
+        border-radius: 40px;
+        overflow: hidden;
+        position: relative;
+        background: var(--paper);
+        border: 1px solid #cfc7b6;
+        box-shadow: 0 40px 80px -34px rgba(60, 45, 30, 0.5);
+      }
+      .screen {
+        height: 100%;
+        padding: 26px 22px 96px;
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+      }
 
-  .top{display:flex;align-items:baseline;justify-content:space-between;border-bottom:2px solid var(--ink);padding-bottom:12px}
-  .wordmark{font-family:'Fraunces',serif;font-weight:900;font-size:24px;letter-spacing:-.02em}
-  .top .k{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink2)}
+      .top {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        border-bottom: 2px solid var(--ink);
+        padding-bottom: 12px;
+      }
+      .wordmark {
+        font-family: "Fraunces", serif;
+        font-weight: 900;
+        font-size: 24px;
+        letter-spacing: -0.02em;
+      }
+      .top .k {
+        font-size: 11px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--ink2);
+      }
 
-  .hero{padding:6px 0 4px}
-  .hero .kicker{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink2)}
-  .hero .big{font-family:'Fraunces',serif;font-weight:900;font-size:118px;line-height:.86;letter-spacing:-.04em;margin:6px 0}
-  .hero .big em{font-style:italic;color:var(--accent)}
-  .hero .row{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink2);border-top:1px solid var(--line);padding-top:12px}
+      .hero {
+        padding: 6px 0 4px;
+      }
+      .hero .kicker {
+        font-size: 12px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--ink2);
+      }
+      .hero .big {
+        font-family: "Fraunces", serif;
+        font-weight: 900;
+        font-size: 118px;
+        line-height: 0.86;
+        letter-spacing: -0.04em;
+        margin: 6px 0;
+      }
+      .hero .big em {
+        font-style: italic;
+        color: var(--accent);
+      }
+      .hero .row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+        color: var(--ink2);
+        border-top: 1px solid var(--line);
+        padding-top: 12px;
+      }
 
-  .list{display:flex;flex-direction:column}
-  .li{display:flex;align-items:center;gap:14px;padding:15px 2px;border-top:1px solid var(--line)}
-  .li:last-child{border-bottom:1px solid var(--line)}
-  .idx{font-family:'Fraunces',serif;font-size:15px;font-weight:600;color:var(--ink2);width:26px}
-  .li .lang{font-size:17px;font-weight:600;flex:1}
-  .li .lang small{display:block;font-size:11px;color:var(--ink2);font-weight:400;margin-top:1px}
-  .due{font-family:'Fraunces',serif;font-weight:900;font-size:20px}
-  .due.zero{color:var(--ink2);font-size:12px;font-weight:500;font-family:'Space Grotesk'}
-  .arrow{font-size:16px}
+      .list {
+        display: flex;
+        flex-direction: column;
+      }
+      .li {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 15px 2px;
+        border-top: 1px solid var(--line);
+      }
+      .li:last-child {
+        border-bottom: 1px solid var(--line);
+      }
+      .idx {
+        font-family: "Fraunces", serif;
+        font-size: 15px;
+        font-weight: 600;
+        color: var(--ink2);
+        width: 26px;
+      }
+      .li .lang {
+        font-size: 17px;
+        font-weight: 600;
+        flex: 1;
+      }
+      .li .lang small {
+        display: block;
+        font-size: 11px;
+        color: var(--ink2);
+        font-weight: 400;
+        margin-top: 1px;
+      }
+      .due {
+        font-family: "Fraunces", serif;
+        font-weight: 900;
+        font-size: 20px;
+      }
+      .due.zero {
+        color: var(--ink2);
+        font-size: 12px;
+        font-weight: 500;
+        font-family: "Space Grotesk";
+      }
+      .arrow {
+        font-size: 16px;
+      }
 
-  .cta{margin-top:auto;background:var(--ink);color:var(--paper);border-radius:0;padding:18px;text-align:center;
-    font-weight:700;font-size:15px;letter-spacing:.02em;display:flex;align-items:center;justify-content:center;gap:10px}
+      .cta {
+        margin-top: auto;
+        background: var(--ink);
+        color: var(--paper);
+        border-radius: 0;
+        padding: 18px;
+        text-align: center;
+        font-weight: 700;
+        font-size: 15px;
+        letter-spacing: 0.02em;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+      }
 
-  .tabbar{position:absolute;left:0;right:0;bottom:0;height:70px;background:var(--paper);border-top:2px solid var(--ink);
-    display:flex;align-items:center;justify-content:space-around;padding:0 20px}
-  .tab{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink2);font-weight:600}
-  .tab.on{color:var(--ink);border-bottom:2px solid var(--accent);padding-bottom:4px}
+      .tabbar {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: 70px;
+        background: var(--paper);
+        border-top: 2px solid var(--ink);
+        display: flex;
+        align-items: center;
+        justify-content: space-around;
+        padding: 0 20px;
+      }
+      .tab {
+        font-size: 12px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--ink2);
+        font-weight: 600;
+      }
+      .tab.on {
+        color: var(--ink);
+        border-bottom: 2px solid var(--accent);
+        padding-bottom: 4px;
+      }
 
-  /* review */
-  .rc{flex:1;display:flex;flex-direction:column;justify-content:center;gap:20px}
-  .flip{border:2px solid var(--ink);background:var(--card);border-radius:0;padding:38px 26px;min-height:320px;
-    display:flex;flex-direction:column;justify-content:center;gap:12px;box-shadow:8px 8px 0 var(--ink)}
-  .flip .ftag{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-weight:700}
-  .flip .word{font-family:'Fraunces',serif;font-weight:900;font-size:46px;line-height:1;letter-spacing:-.02em}
-  .flip .ipa{font-size:14px;color:var(--ink2)}
-  .flip hr{border:none;border-top:1px solid var(--line);margin:8px 0}
-  .flip .mean{font-family:'Fraunces',serif;font-size:26px;font-weight:600}
-  .actions{display:flex;gap:0;border:2px solid var(--ink)}
-  .b{flex:1;padding:16px;text-align:center;font-weight:700;font-size:14px}
-  .b.no{background:var(--paper)}
-  .b.yes{background:var(--accent);color:#fff;border-left:2px solid var(--ink)}
-  .b small{display:block;font-weight:500;font-size:11px;opacity:.75;margin-top:2px}
-</style>
-</head>
-<body>
-  <div class="caption">
-    <span class="badge">Concept B · Editorial Bold</span>
-    <h1>에디토리얼 볼드 — 타이포가 주인공</h1>
-    <p>어워드 편집 디자인 감성. 페이퍼 톤 배경, 초대형 세리프(Fraunces) 디스플레이, 하이컨트라스트 흑백에 단 하나의 강렬한 액센트. 하드 섀도우와 라인 구획으로 잡지 같은 위계.</p>
-  </div>
-  <div class="stage">
-    <!-- Today -->
-    <div class="phone">
-      <div class="screen">
-        <div class="top"><div class="wordmark">되새김</div><div class="k">Flashcards</div></div>
-        <div class="hero">
-          <div class="kicker">오늘 복습</div>
-          <div class="big">12<em>.</em></div>
-          <div class="row">카드가 기다리고 있어요 · 5개 언어</div>
-        </div>
-        <div class="list">
-          <div class="li"><span class="idx">01</span><div class="lang">Español<small>스페인어 · 12개</small></div><span class="due">5</span><span class="arrow">→</span></div>
-          <div class="li"><span class="idx">02</span><div class="lang">English<small>영어 · 30개</small></div><span class="due">4</span><span class="arrow">→</span></div>
-          <div class="li"><span class="idx">03</span><div class="lang">Italiano<small>이탈리아어 · 9개</small></div><span class="due">3</span><span class="arrow">→</span></div>
-          <div class="li"><span class="idx">04</span><div class="lang">Deutsch<small>독일어 · 15개</small></div><span class="due zero">완료</span><span class="arrow">→</span></div>
-        </div>
-        <div class="cta">단어 추가하기 &nbsp;+</div>
-      </div>
-      <div class="tabbar"><div class="tab on">오늘</div><div class="tab">추가</div><div class="tab">단어</div></div>
+      /* review */
+      .rc {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 20px;
+      }
+      .flip {
+        border: 2px solid var(--ink);
+        background: var(--card);
+        border-radius: 0;
+        padding: 38px 26px;
+        min-height: 320px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 12px;
+        box-shadow: 8px 8px 0 var(--ink);
+      }
+      .flip .ftag {
+        font-size: 12px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--accent);
+        font-weight: 700;
+      }
+      .flip .word {
+        font-family: "Fraunces", serif;
+        font-weight: 900;
+        font-size: 46px;
+        line-height: 1;
+        letter-spacing: -0.02em;
+      }
+      .flip .ipa {
+        font-size: 14px;
+        color: var(--ink2);
+      }
+      .flip hr {
+        border: none;
+        border-top: 1px solid var(--line);
+        margin: 8px 0;
+      }
+      .flip .mean {
+        font-family: "Fraunces", serif;
+        font-size: 26px;
+        font-weight: 600;
+      }
+      .actions {
+        display: flex;
+        gap: 0;
+        border: 2px solid var(--ink);
+      }
+      .b {
+        flex: 1;
+        padding: 16px;
+        text-align: center;
+        font-weight: 700;
+        font-size: 14px;
+      }
+      .b.no {
+        background: var(--paper);
+      }
+      .b.yes {
+        background: var(--accent);
+        color: #fff;
+        border-left: 2px solid var(--ink);
+      }
+      .b small {
+        display: block;
+        font-weight: 500;
+        font-size: 11px;
+        opacity: 0.75;
+        margin-top: 2px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="caption">
+      <span class="badge">Concept B · Editorial Bold</span>
+      <h1>에디토리얼 볼드 — 타이포가 주인공</h1>
+      <p>
+        어워드 편집 디자인 감성. 페이퍼 톤 배경, 초대형 세리프(Fraunces)
+        디스플레이, 하이컨트라스트 흑백에 단 하나의 강렬한 액센트. 하드 섀도우와
+        라인 구획으로 잡지 같은 위계.
+      </p>
     </div>
-
-    <!-- Review -->
-    <div class="phone">
-      <div class="screen">
-        <div class="top"><div class="wordmark" style="font-size:16px">← 나가기</div><div class="k">3장 남음</div></div>
-        <div class="rc">
-          <div class="flip">
-            <div class="ftag">Español</div>
-            <div class="word">resiliencia</div>
-            <div class="ipa">/re.si.ˈljen.θja/</div>
-            <hr>
-            <div class="mean">회복력, 회복탄력성</div>
+    <div class="stage">
+      <!-- Today -->
+      <div class="phone">
+        <div class="screen">
+          <div class="top">
+            <div class="wordmark">되새김</div>
+            <div class="k">Flashcards</div>
           </div>
-          <div class="actions">
-            <div class="b no">못 외웠어요<small>오늘 다시</small></div>
-            <div class="b yes">기억했어요<small>3일 후</small></div>
+          <div class="hero">
+            <div class="kicker">오늘 복습</div>
+            <div class="big">12<em>.</em></div>
+            <div class="row">카드가 기다리고 있어요 · 5개 언어</div>
+          </div>
+          <div class="list">
+            <div class="li">
+              <span class="idx">01</span>
+              <div class="lang">Español<small>스페인어 · 12개</small></div>
+              <span class="due">5</span><span class="arrow">→</span>
+            </div>
+            <div class="li">
+              <span class="idx">02</span>
+              <div class="lang">English<small>영어 · 30개</small></div>
+              <span class="due">4</span><span class="arrow">→</span>
+            </div>
+            <div class="li">
+              <span class="idx">03</span>
+              <div class="lang">Italiano<small>이탈리아어 · 9개</small></div>
+              <span class="due">3</span><span class="arrow">→</span>
+            </div>
+            <div class="li">
+              <span class="idx">04</span>
+              <div class="lang">Deutsch<small>독일어 · 15개</small></div>
+              <span class="due zero">완료</span><span class="arrow">→</span>
+            </div>
+          </div>
+          <div class="cta">단어 추가하기 &nbsp;+</div>
+        </div>
+        <div class="tabbar">
+          <div class="tab on">오늘</div>
+          <div class="tab">추가</div>
+          <div class="tab">단어</div>
+        </div>
+      </div>
+
+      <!-- Review -->
+      <div class="phone">
+        <div class="screen">
+          <div class="top">
+            <div class="wordmark" style="font-size: 16px">← 나가기</div>
+            <div class="k">3장 남음</div>
+          </div>
+          <div class="rc">
+            <div class="flip">
+              <div class="ftag">Español</div>
+              <div class="word">resiliencia</div>
+              <div class="ipa">/re.si.ˈljen.θja/</div>
+              <hr />
+              <div class="mean">회복력, 회복탄력성</div>
+            </div>
+            <div class="actions">
+              <div class="b no">못 외웠어요<small>오늘 다시</small></div>
+              <div class="b yes">기억했어요<small>3일 후</small></div>
+            </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
-</body>
+  </body>
 </html>

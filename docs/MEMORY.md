@@ -5,6 +5,14 @@
 
 ---
 
+## 2026-07-24 · 오늘 진행률 히어로(남은 수 + 링)
+
+- 한 일: Today 히어로를 글래스 카드로 바꾸고 남은 복습 수(큰 숫자) + 진행률 링(conic) 추가. 진행률 = passedToday/(passedToday+dueTotal). `dailyStats.js`(device-local 일일 카운터, 날짜 변경 시 자동 리셋) 신설 + 테스트 4개. Review에서 "기억했어요"(remembered) 채점 시 `onPass`로 카운트 bump.
+- 결정/이유: 리뷰 타임스탬프 필드 없이 구현하려 "오늘 통과 카드" 카운터만 로컬 저장(로그인 무관 device-local). 잊음(forgot)은 진행률에 안 셈(카드가 계속 due). 미리보기 design/today-progress.html.
+- 변경 파일: src/App.jsx, src/styles.css, src/lib/dailyStats.js(+test), design/today-progress.html. 테스트 63개 그린, 빌드 OK.
+
+---
+
 ## 2026-07-24 · Aurora Glass 리퀴드 리디자인 전면 적용
 
 - 한 일: 시안 4종 제작(design/) 후 "Aurora Glass(리퀴드)" 방향으로 실제 앱 전면 리스킨. `styles.css` 팔레트·표면을 리퀴드 글래스(구운 rim 하이라이트+깊이 그림자, 광택 스윕은 요청대로 제외)로 교체, 미세 웨이브(vc-wobble/breathe)와 숫자 셰이머 추가. `App.jsx`에 SVG goo 오로라 배경 컴포넌트(`AuroraBg`) 추가(기존 vc-bgglow 대체). 모든 화면(오늘/복습/추가/단어목록/로그인/백업/탭바/빈상태) 반영. 계정 버튼이 `.vc-mini` 고정폭에 글자 잘리던 것도 자동폭으로 수정.
@@ -17,7 +25,7 @@
 
 - 한 일: 지원 언어에서 프랑스어 제거, 스페인어·이탈리아어·독일어 추가(`languages.js`, `schema.sql`, 라이브 DB의 CHECK 제약 ALTER, Edge Function `LANGS` 재배포). 자동완성 실패 원인 수정 — `translate.js`가 Supabase 게이트웨이용 `apikey`+`Authorization`(anon 키) 헤더를 보내지 않아 401로 막히던 것을 `buildHeaders()`로 첨부. QC: LangPicker가 언어 5개를 한 줄에 못 담던 것을 `flex-wrap` + `min-width`로 해결.
 - 결정/이유: verify_jwt를 꺼도 게이트웨이는 프로젝트 라우팅용 `apikey`를 요구함(대시보드 cURL 예시가 근거). due/created_at ms 유지. 테스트 fr→de/es로 갱신.
-- 변경 파일: src/lib/languages.js, translate.js (+translate.test), src/lib/__tests__/{backup,rows}.test.js, src/styles.css, supabase/{schema.sql,functions/translate/index.ts}. 테스트 59개 그린, 빌드 OK.
+- 변경 파일: src/lib/languages.js, translate.js (+translate.test), src/lib/**tests**/{backup,rows}.test.js, src/styles.css, supabase/{schema.sql,functions/translate/index.ts}. 테스트 59개 그린, 빌드 OK.
 - 알려진 한계(인웹): 카카오/인스타 등 인앱 브라우저에선 매직링크가 외부 브라우저로 열려 세션이 분리됨 → 로그인 안 될 수 있음. 필요 시 OTP 6자리 코드 방식으로 전환 검토.
 
 ---

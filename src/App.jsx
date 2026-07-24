@@ -7,7 +7,12 @@ import {
   dueLabel,
   nextIntervalDays,
 } from "./lib/srs.js";
-import { createWordStore, resolveBackend } from "./lib/storage.js";
+import {
+  createWordStore,
+  resolveBackend,
+  selectBackend,
+} from "./lib/storage.js";
+import { createDailyStats } from "./lib/dailyStats.js";
 import { createRemoteWordStore } from "./lib/remoteStore.js";
 import {
   isCloudConfigured,
@@ -109,26 +114,85 @@ function AuroraBg() {
           </filter>
         </defs>
       </svg>
-      <svg className="vc-aurora-svg" viewBox="0 0 390 820" preserveAspectRatio="xMidYMid slice">
+      <svg
+        className="vc-aurora-svg"
+        viewBox="0 0 390 820"
+        preserveAspectRatio="xMidYMid slice"
+      >
         <g filter="url(#vc-goo)">
           <circle fill="#8b7bff" r="110" cx="90" cy="150">
-            <animate attributeName="cx" values="90;170;60;90" dur="16s" repeatCount="indefinite" />
-            <animate attributeName="cy" values="150;110;210;150" dur="19s" repeatCount="indefinite" />
-            <animate attributeName="r" values="110;128;100;110" dur="14s" repeatCount="indefinite" />
+            <animate
+              attributeName="cx"
+              values="90;170;60;90"
+              dur="16s"
+              repeatCount="indefinite"
+            />
+            <animate
+              attributeName="cy"
+              values="150;110;210;150"
+              dur="19s"
+              repeatCount="indefinite"
+            />
+            <animate
+              attributeName="r"
+              values="110;128;100;110"
+              dur="14s"
+              repeatCount="indefinite"
+            />
           </circle>
           <circle fill="#4fd6e6" r="92" cx="300" cy="190">
-            <animate attributeName="cx" values="300;240;330;300" dur="20s" repeatCount="indefinite" />
-            <animate attributeName="cy" values="190;260;150;190" dur="15s" repeatCount="indefinite" />
-            <animate attributeName="r" values="92;108;82;92" dur="17s" repeatCount="indefinite" />
+            <animate
+              attributeName="cx"
+              values="300;240;330;300"
+              dur="20s"
+              repeatCount="indefinite"
+            />
+            <animate
+              attributeName="cy"
+              values="190;260;150;190"
+              dur="15s"
+              repeatCount="indefinite"
+            />
+            <animate
+              attributeName="r"
+              values="92;108;82;92"
+              dur="17s"
+              repeatCount="indefinite"
+            />
           </circle>
           <circle fill="#ff8bc4" r="86" cx="170" cy="300">
-            <animate attributeName="cx" values="170;120;230;170" dur="18s" repeatCount="indefinite" />
-            <animate attributeName="cy" values="300;350;270;300" dur="21s" repeatCount="indefinite" />
-            <animate attributeName="r" values="86;104;78;86" dur="15s" repeatCount="indefinite" />
+            <animate
+              attributeName="cx"
+              values="170;120;230;170"
+              dur="18s"
+              repeatCount="indefinite"
+            />
+            <animate
+              attributeName="cy"
+              values="300;350;270;300"
+              dur="21s"
+              repeatCount="indefinite"
+            />
+            <animate
+              attributeName="r"
+              values="86;104;78;86"
+              dur="15s"
+              repeatCount="indefinite"
+            />
           </circle>
           <circle fill="#7c5cff" r="70" cx="300" cy="430">
-            <animate attributeName="cx" values="300;250;330;300" dur="19s" repeatCount="indefinite" />
-            <animate attributeName="cy" values="430;390;470;430" dur="16s" repeatCount="indefinite" />
+            <animate
+              attributeName="cx"
+              values="300;250;330;300"
+              dur="19s"
+              repeatCount="indefinite"
+            />
+            <animate
+              attributeName="cy"
+              values="430;390;470;430"
+              dur="16s"
+              repeatCount="indefinite"
+            />
           </circle>
         </g>
       </svg>
@@ -144,7 +208,20 @@ export default function App() {
   const [tab, setTab] = useState("today");
   const [session, setSession] = useState(null);
   const [user, setUser] = useState(null);
+  const [passedToday, setPassedToday] = useState(0);
   const storeRef = useRef(null);
+  const statsRef = useRef(null);
+
+  // device-local daily progress counter (cards passed today)
+  useEffect(() => {
+    statsRef.current = createDailyStats(selectBackend());
+    statsRef.current.load().then(setPassedToday);
+  }, []);
+
+  const onPass = useCallback(() => {
+    if (statsRef.current) statsRef.current.bump().then(setPassedToday);
+    else setPassedToday((n) => n + 1);
+  }, []);
 
   // preload speech voices
   useEffect(() => {
@@ -222,6 +299,7 @@ export default function App() {
             session={session}
             words={words}
             commit={commit}
+            onPass={onPass}
             onExit={() => setSession(null)}
           />
         ) : tab === "today" ? (
@@ -229,6 +307,7 @@ export default function App() {
             words={words}
             dueByLang={dueByLang}
             dueTotal={dueTotal}
+            passedToday={passedToday}
             onStart={(lang) => setSession({ lang, dir: "forward" })}
             onAdd={() => setTab("add")}
           />
@@ -266,7 +345,14 @@ export default function App() {
 
 /* ───────────────────────── today ───────────────────────── */
 
-function Today({ words, dueByLang, dueTotal, onStart, onAdd }) {
+function Today({
+  words,
+  dueByLang,
+  dueTotal,
+  passedToday = 0,
+  onStart,
+  onAdd,
+}) {
   if (words.length === 0) {
     return (
       <div className="vc-empty-state">
@@ -280,12 +366,23 @@ function Today({ words, dueByLang, dueTotal, onStart, onAdd }) {
     );
   }
 
+  const goal = passedToday + dueTotal;
+  const pct = goal > 0 ? Math.round((passedToday / goal) * 100) : 100;
+
   return (
     <div className="vc-view">
-      <div className="vc-hero">
+      <div className="vc-glass vc-hero">
+        <div className="vc-hero-ring" style={{ "--pct": pct }}>
+          <div className="vc-hero-ring-in">{pct}%</div>
+        </div>
+        <div className="vc-hero-lbl">오늘 복습</div>
         <div className="vc-hero-num">{dueTotal}</div>
-        <div className="vc-hero-label">
-          {dueTotal > 0 ? "복습할 카드가 기다려요" : "오늘 복습 끝났어요"}
+        <div className="vc-hero-sub">
+          {dueTotal > 0
+            ? `${passedToday}장 완료 · ${dueTotal}장 남음`
+            : goal > 0
+              ? "오늘 복습 끝났어요 🎉"
+              : "복습할 카드가 없어요"}
         </div>
       </div>
 
@@ -321,7 +418,7 @@ function Today({ words, dueByLang, dueTotal, onStart, onAdd }) {
 
 /* ───────────────────────── review ───────────────────────── */
 
-function Review({ session, words, commit, onExit }) {
+function Review({ session, words, commit, onExit, onPass }) {
   const { lang } = session;
   const [dir, setDir] = useState(session.dir);
   const [queue, setQueue] = useState(() =>
@@ -337,6 +434,7 @@ function Review({ session, words, commit, onExit }) {
     commit((prev) =>
       prev.map((w) => (w.id === card.id ? schedule(w, remembered) : w)),
     );
+    if (remembered) onPass?.();
     setQueue((q) => {
       const [, ...rest] = q;
       return remembered ? rest : [...rest, card.id];

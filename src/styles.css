@@ -14,8 +14,16 @@
   --forgot: #ff9db8;
   /* liquid-glass surface (baked rim highlight + depth, no moving sheen) */
   --lg-bg:
-    radial-gradient(120% 62% at 30% -12%, rgba(255, 255, 255, 0.16), transparent 55%),
-    linear-gradient(155deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.035));
+    radial-gradient(
+      120% 62% at 30% -12%,
+      rgba(255, 255, 255, 0.16),
+      transparent 55%
+    ),
+    linear-gradient(
+      155deg,
+      rgba(255, 255, 255, 0.12),
+      rgba(255, 255, 255, 0.035)
+    );
   --lg-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.5),
     inset 0 -14px 26px -18px rgba(0, 0, 0, 0.55),
@@ -32,8 +40,7 @@ body,
 }
 body {
   margin: 0;
-  background:
-    radial-gradient(1200px 720px at 50% -12%, #101427, #05060d 62%);
+  background: radial-gradient(1200px 720px at 50% -12%, #101427, #05060d 62%);
   color: var(--ink);
   font-family:
     -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto,
@@ -138,14 +145,21 @@ body {
 }
 
 .vc-hero {
-  text-align: center;
-  padding: 34px 0 26px;
+  position: relative;
+  text-align: left;
+  padding: 24px 26px 26px;
+  margin-bottom: 14px;
+}
+.vc-hero-lbl {
+  font-size: 12.5px;
+  color: var(--ink2);
 }
 .vc-hero-num {
-  font-size: 76px;
+  font-size: 66px;
   font-weight: 800;
   letter-spacing: -0.04em;
   line-height: 1;
+  margin: 4px 0 2px;
   background: linear-gradient(90deg, #ffffff, #c9d0ff, #ffffff);
   background-size: 200% 100%;
   -webkit-background-clip: text;
@@ -161,10 +175,38 @@ body {
     background-position: 200% 0;
   }
 }
-.vc-hero-label {
-  margin-top: 10px;
-  font-size: 15px;
+.vc-hero-sub {
+  font-size: 13px;
   color: var(--ink2);
+}
+/* daily progress ring */
+.vc-hero-ring {
+  position: absolute;
+  right: 22px;
+  top: 22px;
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: conic-gradient(
+    from -90deg,
+    var(--a) calc(var(--pct, 0) * 1%),
+    rgba(255, 255, 255, 0.12) 0
+  );
+  filter: drop-shadow(0 0 10px rgba(167, 255, 91, 0.35));
+  transition: background 0.5s ease;
+}
+.vc-hero-ring-in {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: #0b0d18;
+  display: grid;
+  place-items: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink);
 }
 
 .vc-section-label {
@@ -461,8 +503,16 @@ body {
 }
 .vc-face.accent {
   background:
-    radial-gradient(120% 62% at 30% -12%, rgba(139, 123, 255, 0.22), transparent 55%),
-    linear-gradient(155deg, rgba(120, 200, 230, 0.14), rgba(255, 255, 255, 0.03));
+    radial-gradient(
+      120% 62% at 30% -12%,
+      rgba(139, 123, 255, 0.22),
+      transparent 55%
+    ),
+    linear-gradient(
+      155deg,
+      rgba(120, 200, 230, 0.14),
+      rgba(255, 255, 255, 0.03)
+    );
 }
 .vc-face-tag {
   font-size: 12px;
@@ -606,7 +656,11 @@ body {
   transition: all 0.18s;
 }
 .vc-lp-opt.on {
-  background: linear-gradient(140deg, rgba(139, 123, 255, 0.3), rgba(255, 139, 196, 0.24));
+  background: linear-gradient(
+    140deg,
+    rgba(139, 123, 255, 0.3),
+    rgba(255, 139, 196, 0.24)
+  );
   color: var(--ink);
   border-color: var(--line2);
   border-width: 1.5px;
@@ -777,8 +831,7 @@ body {
   flex-direction: column;
   gap: 2px;
   border-radius: 16px;
-  transition:
-    transform 0.12s;
+  transition: transform 0.12s;
 }
 .vc-sugg:hover {
   transform: translateX(2px);
@@ -941,7 +994,11 @@ body {
   width: 26px;
   height: 26px;
   border-radius: 9px;
-  background: radial-gradient(circle, rgba(139, 123, 255, 0.55), transparent 70%);
+  background: radial-gradient(
+    circle,
+    rgba(139, 123, 255, 0.55),
+    transparent 70%
+  );
   filter: blur(4px);
   z-index: -1;
 }
