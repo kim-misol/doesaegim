@@ -13,6 +13,15 @@
 
 ---
 
+## 2026-07-24 · 기기 간 설정 동기화 (진행률·언어순서) + 포커스 새로고침
+
+- 증상: 같은 계정 여러 기기에서 단어는 동기화되는데 복습 진행률·언어별 순서가 제각각. 원인: `daily_stats_v1`(진행률 카운터)·`lang_order_v1`(순서)를 device-local localStorage에 저장.
+- 한 일: Supabase `kv(user_id,k,value)` 테이블+RLS 추가(라이브 마이그레이션 적용). `kvBackend.js`의 `supabaseKvBackend(client,userId)`가 기존 backend 인터페이스(get/set) 호환 → dailyStats·langOrder 스토어를 코드 변경 없이 클라우드로 사용. App은 로그인 시 KV 백엔드, 미로그인/미설정 시 local로 `[user]`에 따라 재해석·재로드. 추가로 visibilitychange/focus 시 words+prefs 재로드(실시간 구독 없는 대신 기기 간 최신화). 테스트: kvBackend 3개(총 84 그린).
+- 결정/이유: 설정은 사용자 단위 → 클라우드. 남은 갯수(dueTotal)는 단어(동기화)에서 파생이라 원래 같아야 하나 stale 문제 → 포커스 새로고침으로 완화. 완전 실시간은 후속(Supabase realtime) 과제.
+- 변경 파일: src/App.jsx, src/lib/kvBackend.js(+test), supabase/schema.sql(+라이브 kv). 빌드 OK.
+
+---
+
 ## 2026-07-24 · 오늘 진행률 계산 정리 (progress.js)
 
 - 한 일: Today 진행률 계산을 `progress.js`의 `reviewProgress(words, passedToday, now)` 순수 함수로 추출. 공식: `passedToday / (passedToday + dueTotal)`, dueTotal은 현재 due 전부(오늘 추가분 포함), pct 0~100 클램프. 테스트 4개.

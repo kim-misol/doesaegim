@@ -54,3 +54,25 @@ create policy "own rows – update" on public.words
 drop policy if exists "own rows – delete" on public.words;
 create policy "own rows – delete" on public.words
   for delete using (auth.uid() = user_id);
+
+-- ---- per-user preferences (device-independent) --------------------------
+-- Small key/value store synced across devices: language review order,
+-- today's review progress counter, etc.
+create table if not exists public.kv (
+  user_id    uuid not null references auth.users (id) on delete cascade,
+  k          text not null,
+  value      text,
+  updated_at bigint not null default (extract(epoch from now()) * 1000)::bigint,
+  primary key (user_id, k)
+);
+
+drop trigger if exists kv_touch_updated_at on public.kv;
+create trigger kv_touch_updated_at
+  before update on public.kv
+  for each row execute function public.touch_updated_at();
+
+alter table public.kv enable row level security;
+
+drop policy if exists "own kv – all" on public.kv;
+create policy "own kv – all" on public.kv
+  for all using (auth.uid() = user_id) with check (auth.uid() = user_id);

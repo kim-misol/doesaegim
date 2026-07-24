@@ -14,6 +14,7 @@ import {
 } from "./lib/storage.js";
 import { createDailyStats } from "./lib/dailyStats.js";
 import { createLangOrderStore, moveItem } from "./lib/langOrder.js";
+import { supabaseKvBackend } from "./lib/kvBackend.js";
 import { reviewProgress } from "./lib/progress.js";
 import { createRemoteWordStore } from "./lib/remoteStore.js";
 import {
@@ -215,17 +216,34 @@ export default function App() {
   const statsRef = useRef(null);
   const orderRef = useRef(null);
 
-  // device-local daily progress counter (cards passed today)
+  // user preferences (daily progress counter + language review order).
+  // Synced via cloud KV when signed in, else device-local. Re-resolves on
+  // login/logout so all devices on the same account stay in sync.
   useEffect(() => {
-    statsRef.current = createDailyStats(selectBackend());
-    statsRef.current.load().then(setPassedToday);
-  }, []);
-
-  // device-local user-defined order of the language review cards
-  useEffect(() => {
-    orderRef.current = createLangOrderStore(selectBackend(), LANG_KEYS);
-    orderRef.current.load().then(setLangOrder);
-  }, []);
+    let alive = true;
+    (async () => {
+      let backend;
+      if (cloudEnabled && user) {
+        const sb = await getSupabase();
+        backend = sb ? supabaseKvBackend(sb, user.id) : selectBackend();
+      } else {
+        backend = selectBackend();
+      }
+      statsRef.current = createDailyStats(backend);
+      orderRef.current = createLangOrderStore(backend, LANG_KEYS);
+      const [p, o] = await Promise.all([
+        statsRef.current.load().catch(() => 0),
+        orderRef.current.load().catch(() => LANG_KEYS),
+      ]);
+      if (alive) {
+        setPassedToday(p);
+        setLangOrder(o);
+      }
+    })();
+    return () => {
+      alive = false;
+    };
+  }, [user]);
 
   const onPass = useCallback(() => {
     if (statsRef.current) statsRef.current.bump().then(setPassedToday);
@@ -287,6 +305,26 @@ export default function App() {
       if (storeRef.current) storeRef.current.save(next);
       return next;
     });
+  }, []);
+
+  // Refresh words + prefs from the cloud when returning to the app, so other
+  // devices' changes (reviews, reordering) show up without a manual reload.
+  useEffect(() => {
+    const refresh = () => {
+      if (typeof document !== "undefined" && document.hidden) return;
+      storeRef.current
+        ?.load()
+        .then((w) => Array.isArray(w) && setWords(w))
+        .catch(() => {});
+      statsRef.current?.load().then(setPassedToday).catch(() => {});
+      orderRef.current?.load().then(setLangOrder).catch(() => {});
+    };
+    document.addEventListener("visibilitychange", refresh);
+    window.addEventListener("focus", refresh);
+    return () => {
+      document.removeEventListener("visibilitychange", refresh);
+      window.removeEventListener("focus", refresh);
+    };
   }, []);
 
   const dueByLang = LANG_KEYS.reduce((acc, l) => {
