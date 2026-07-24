@@ -39,7 +39,8 @@ function fakePreferences(initial = {}) {
 }
 
 beforeEach(() => {
-  if (typeof window !== "undefined" && window.localStorage) window.localStorage.clear();
+  if (typeof window !== "undefined" && window.localStorage)
+    window.localStorage.clear();
   if (typeof window !== "undefined") delete window.storage;
 });
 
@@ -54,10 +55,14 @@ describe("createWordStore (generic backend)", () => {
     expect(await store.load()).toEqual(words);
   });
   it("recovers from corrupt JSON", async () => {
-    expect(await createWordStore(fakeBackend({ [STORE_KEY]: "{nope" })).load()).toEqual([]);
+    expect(
+      await createWordStore(fakeBackend({ [STORE_KEY]: "{nope" })).load(),
+    ).toEqual([]);
   });
   it("ignores non-array stored values", async () => {
-    expect(await createWordStore(fakeBackend({ [STORE_KEY]: '{"a":1}' })).load()).toEqual([]);
+    expect(
+      await createWordStore(fakeBackend({ [STORE_KEY]: '{"a":1}' })).load(),
+    ).toEqual([]);
   });
 });
 
@@ -87,7 +92,9 @@ describe("capacitorBackend", () => {
     expect(prefs.mem[STORE_KEY]).toContain("chien");
   });
   it("returns [] when the key was never set", async () => {
-    expect(await createWordStore(capacitorBackend(fakePreferences())).load()).toEqual([]);
+    expect(
+      await createWordStore(capacitorBackend(fakePreferences())).load(),
+    ).toEqual([]);
   });
 });
 

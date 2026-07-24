@@ -26,11 +26,17 @@ export function parseResponse(data) {
     .filter((b) => b.type === "text")
     .map((b) => b.text)
     .join("");
-  const clean = text.replace(/```json/g, "").replace(/```/g, "").trim();
+  const clean = text
+    .replace(/```json/g, "")
+    .replace(/```/g, "")
+    .trim();
   const parsed = JSON.parse(clean);
   const arr = parsed.t || parsed.translations || [];
   return arr
-    .map((x) => ({ meaning: x.m ?? x.meaning ?? "", note: x.n ?? x.note ?? "" }))
+    .map((x) => ({
+      meaning: x.m ?? x.meaning ?? "",
+      note: x.n ?? x.note ?? "",
+    }))
     .filter((x) => x.meaning);
 }
 
@@ -45,9 +51,10 @@ export async function fetchMeanings(
     fetchImpl = typeof fetch !== "undefined" ? fetch : undefined,
     cache = memCache,
     endpoint = getEndpoint(),
-  } = {}
+  } = {},
 ) {
-  if (!endpoint) throw new Error("no endpoint configured — set VITE_TRANSLATE_ENDPOINT");
+  if (!endpoint)
+    throw new Error("no endpoint configured — set VITE_TRANSLATE_ENDPOINT");
 
   const key = cacheKey(word, srcLang, tgtLang, mode);
   if (cache.has(key)) return cache.get(key);

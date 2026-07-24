@@ -28,7 +28,7 @@ export function memoryBackend() {
 }
 
 export function localStorageBackend(
-  ls = typeof window !== "undefined" ? window.localStorage : null
+  ls = typeof window !== "undefined" ? window.localStorage : null,
 ) {
   if (!ls) return null;
   return {
@@ -75,7 +75,11 @@ export function selectBackend() {
 export async function resolveBackend() {
   try {
     const cap = typeof window !== "undefined" ? window.Capacitor : null;
-    if (cap && typeof cap.isNativePlatform === "function" && cap.isNativePlatform()) {
+    if (
+      cap &&
+      typeof cap.isNativePlatform === "function" &&
+      cap.isNativePlatform()
+    ) {
       const spec = "@capacitor/preferences";
       const mod = await import(/* @vite-ignore */ spec);
       const be = capacitorBackend(mod && mod.Preferences);

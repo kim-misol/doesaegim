@@ -4,7 +4,7 @@
 # =============================================================================
 
 .PHONY: help install dev build preview \
-        test test-watch test-ui ci \
+        test test-watch test-ui lint format format-check ci \
         supabase-login supabase-link supabase-deploy supabase-secrets \
         deploy clean
 
@@ -23,7 +23,10 @@ help:
 	@echo "  make test            유닛 테스트 1회 실행"
 	@echo "  make test-watch      유닛 테스트 watch 모드 (TDD)"
 	@echo "  make test-ui         Vitest UI"
-	@echo "  make ci              CI와 동일하게 test + build 실행 (push 전 확인용)"
+	@echo "  make lint            ESLint 검사"
+	@echo "  make format          Prettier로 포맷 적용 (--write)"
+	@echo "  make format-check    Prettier 포맷 검사만 (--check, CI용)"
+	@echo "  make ci              CI와 동일하게 lint + test + build 실행 (push 전 확인용)"
 	@echo ""
 	@echo "  ── Supabase (translate 프록시 / 클라우드 동기화) ────"
 	@echo "  make supabase-login  Supabase CLI 로그인"
@@ -67,8 +70,17 @@ test-watch:
 test-ui:
 	npm run test:ui
 
+lint:
+	npm run lint
+
+format:
+	npm run format
+
+format-check:
+	npm run format:check
+
 # GitHub Actions(ci.yml)와 동일한 순서로 로컬에서 미리 확인
-ci: test build
+ci: lint format-check test build
 
 # =============================================================================
 # Supabase

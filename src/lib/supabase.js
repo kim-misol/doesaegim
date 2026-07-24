@@ -54,7 +54,9 @@ export async function signInWithEmail(email, env = import.meta.env) {
   if (!sb) return { error: new Error("cloud not configured") };
   return sb.auth.signInWithOtp({
     email,
-    options: { emailRedirectTo: window.location.origin + window.location.pathname },
+    options: {
+      emailRedirectTo: window.location.origin + window.location.pathname,
+    },
   });
 }
 
@@ -67,6 +69,8 @@ export async function signOut(env = import.meta.env) {
 export async function onAuthChange(cb, env = import.meta.env) {
   const sb = await getSupabase(env);
   if (!sb) return () => {};
-  const { data } = sb.auth.onAuthStateChange((_evt, session) => cb(session?.user ?? null));
+  const { data } = sb.auth.onAuthStateChange((_evt, session) =>
+    cb(session?.user ?? null),
+  );
   return () => data?.subscription?.unsubscribe?.();
 }

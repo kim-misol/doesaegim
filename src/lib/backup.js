@@ -13,7 +13,7 @@ export function wordsToJSON(words, now = Date.now()) {
   return JSON.stringify(
     { app: "doesaegim", version: BACKUP_VERSION, exportedAt: now, words },
     null,
-    2
+    2,
   );
 }
 
@@ -58,7 +58,15 @@ export function mergeWords(existing = [], incoming = []) {
 
 // ---- CSV ----------------------------------------------------------------
 
-const CSV_COLS = ["srcLang", "tgtLang", "word", "meaning", "box", "due", "createdAt"];
+const CSV_COLS = [
+  "srcLang",
+  "tgtLang",
+  "word",
+  "meaning",
+  "box",
+  "due",
+  "createdAt",
+];
 
 const esc = (v) => {
   const s = String(v ?? "");
@@ -81,16 +89,28 @@ export function parseCSV(str) {
     const c = str[i];
     if (inQuotes) {
       if (c === '"') {
-        if (str[i + 1] === '"') { field += '"'; i++; }
-        else inQuotes = false;
+        if (str[i + 1] === '"') {
+          field += '"';
+          i++;
+        } else inQuotes = false;
       } else field += c;
     } else if (c === '"') inQuotes = true;
-    else if (c === ",") { row.push(field); field = ""; }
-    else if (c === "\n") { row.push(field); rows.push(row); row = []; field = ""; }
-    else if (c === "\r") { /* skip */ }
-    else field += c;
+    else if (c === ",") {
+      row.push(field);
+      field = "";
+    } else if (c === "\n") {
+      row.push(field);
+      rows.push(row);
+      row = [];
+      field = "";
+    } else if (c === "\r") {
+      /* skip */
+    } else field += c;
   }
-  if (field !== "" || row.length) { row.push(field); rows.push(row); }
+  if (field !== "" || row.length) {
+    row.push(field);
+    rows.push(row);
+  }
   return rows;
 }
 
@@ -112,8 +132,8 @@ export function wordsFromCSV(str) {
           due: r[idx.due],
           createdAt: r[idx.createdAt],
         },
-        i
-      )
+        i,
+      ),
     )
     .filter(Boolean);
 }

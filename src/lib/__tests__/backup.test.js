@@ -8,8 +8,26 @@ import {
 } from "../backup.js";
 
 const words = [
-  { id: "1", srcLang: "en", tgtLang: "ko", word: "apple", meaning: "사과", box: 2, due: 1700000000000, createdAt: 1600000000000 },
-  { id: "2", srcLang: "fr", tgtLang: "ko", word: "chat, noir", meaning: '고양이 "검은"', box: 0, due: 1710000000000, createdAt: 1610000000000 },
+  {
+    id: "1",
+    srcLang: "en",
+    tgtLang: "ko",
+    word: "apple",
+    meaning: "사과",
+    box: 2,
+    due: 1700000000000,
+    createdAt: 1600000000000,
+  },
+  {
+    id: "2",
+    srcLang: "fr",
+    tgtLang: "ko",
+    word: "chat, noir",
+    meaning: '고양이 "검은"',
+    box: 0,
+    due: 1710000000000,
+    createdAt: 1610000000000,
+  },
 ];
 
 describe("JSON backup", () => {
@@ -24,7 +42,9 @@ describe("JSON backup", () => {
   });
 
   it("drops rows without word or meaning", () => {
-    const restored = wordsFromJSON(JSON.stringify([{ word: "", meaning: "x" }, words[0]]));
+    const restored = wordsFromJSON(
+      JSON.stringify([{ word: "", meaning: "x" }, words[0]]),
+    );
     expect(restored).toHaveLength(1);
   });
 

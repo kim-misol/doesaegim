@@ -32,14 +32,26 @@ describe("createWord", () => {
 
 describe("schedule", () => {
   it("promotes the box and pushes due forward on recall", () => {
-    const w = createWord({ srcLang: "en", tgtLang: "ko", word: "a", meaning: "ㄱ", now: T0 });
+    const w = createWord({
+      srcLang: "en",
+      tgtLang: "ko",
+      word: "a",
+      meaning: "ㄱ",
+      now: T0,
+    });
     const w1 = schedule(w, true, T0);
     expect(w1.box).toBe(1);
     expect(w1.due).toBe(T0 + INTERVALS[1] * DAY);
   });
 
   it("resets to box 0 / due now when forgotten", () => {
-    let w = createWord({ srcLang: "en", tgtLang: "ko", word: "a", meaning: "ㄱ", now: T0 });
+    let w = createWord({
+      srcLang: "en",
+      tgtLang: "ko",
+      word: "a",
+      meaning: "ㄱ",
+      now: T0,
+    });
     w = schedule(w, true, T0); // box 1
     w = schedule(w, true, T0); // box 2
     const forgotten = schedule(w, false, T0 + 5 * DAY);
@@ -48,13 +60,25 @@ describe("schedule", () => {
   });
 
   it("caps the box at the final interval", () => {
-    let w = createWord({ srcLang: "en", tgtLang: "ko", word: "a", meaning: "ㄱ", now: T0 });
+    let w = createWord({
+      srcLang: "en",
+      tgtLang: "ko",
+      word: "a",
+      meaning: "ㄱ",
+      now: T0,
+    });
     for (let i = 0; i < 20; i++) w = schedule(w, true, T0);
     expect(w.box).toBe(INTERVALS.length - 1);
   });
 
   it("does not mutate the input word", () => {
-    const w = createWord({ srcLang: "en", tgtLang: "ko", word: "a", meaning: "ㄱ", now: T0 });
+    const w = createWord({
+      srcLang: "en",
+      tgtLang: "ko",
+      word: "a",
+      meaning: "ㄱ",
+      now: T0,
+    });
     schedule(w, true, T0);
     expect(w.box).toBe(0);
   });

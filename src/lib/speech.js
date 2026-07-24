@@ -14,7 +14,7 @@ export function pickVoice(voices, langCode) {
 export function speak(
   text,
   langCode,
-  synth = typeof window !== "undefined" ? window.speechSynthesis : null
+  synth = typeof window !== "undefined" ? window.speechSynthesis : null,
 ) {
   if (!text || !synth) return false;
   try {

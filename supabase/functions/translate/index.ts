@@ -30,12 +30,13 @@ function allowlist(): string[] {
 function corsHeaders(origin: string | null) {
   const list = allowlist();
   // If no allowlist configured, allow all (dev). Otherwise echo only if listed.
-  const allow = list.length === 0 ? "*" : list.includes(origin ?? "") ? origin! : "";
+  const allow =
+    list.length === 0 ? "*" : list.includes(origin ?? "") ? origin! : "";
   return {
     "Access-Control-Allow-Origin": allow,
     "Access-Control-Allow-Headers": "authorization, apikey, content-type",
     "Access-Control-Allow-Methods": "POST, OPTIONS",
-    "Vary": "Origin",
+    Vary: "Origin",
   };
 }
 
@@ -50,7 +51,8 @@ Deno.serve(async (req) => {
   const cors = corsHeaders(origin);
 
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
-  if (req.method !== "POST") return json({ error: "method not allowed" }, 405, cors);
+  if (req.method !== "POST")
+    return json({ error: "method not allowed" }, 405, cors);
 
   // reject disallowed browser origins (empty Allow-Origin => blocked by CORS,
   // but also fail fast server-side)
@@ -69,7 +71,10 @@ Deno.serve(async (req) => {
   }
 
   const word = String(body.word ?? "").trim();
-  const { srcLang, tgtLang, mode, systemPrompt } = body as Record<string, string>;
+  const { srcLang, tgtLang, mode, systemPrompt } = body as Record<
+    string,
+    string
+  >;
 
   if (!word || word.length > 100) return json({ error: "bad word" }, 400, cors);
   if (!LANGS.includes(srcLang) || !LANGS.includes(tgtLang))

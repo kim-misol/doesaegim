@@ -14,7 +14,13 @@ export function makeId(now = Date.now()) {
   return now.toString(36) + "-" + counter.toString(36);
 }
 
-export function createWord({ srcLang, tgtLang, word, meaning, now = Date.now() }) {
+export function createWord({
+  srcLang,
+  tgtLang,
+  word,
+  meaning,
+  now = Date.now(),
+}) {
   return {
     id: makeId(now),
     srcLang, // language of the word itself

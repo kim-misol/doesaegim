@@ -3,7 +3,14 @@
 
 function fingerprint(w) {
   // Fields that, when changed, require a DB write. Order fixed for stability.
-  return JSON.stringify([w.srcLang, w.tgtLang, w.word, w.meaning, w.box, w.due]);
+  return JSON.stringify([
+    w.srcLang,
+    w.tgtLang,
+    w.word,
+    w.meaning,
+    w.box,
+    w.due,
+  ]);
 }
 
 // prev / next are arrays of app words. Returns:
@@ -18,9 +25,7 @@ export function diffWords(prev = [], next = []) {
     return !before || fingerprint(before) !== fingerprint(w);
   });
 
-  const deleteIds = prev
-    .filter((w) => !nextIds.has(w.id))
-    .map((w) => w.id);
+  const deleteIds = prev.filter((w) => !nextIds.has(w.id)).map((w) => w.id);
 
   return { upserts, deleteIds };
 }

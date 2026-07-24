@@ -34,8 +34,15 @@ function fakeClient(initialRows = []) {
 }
 
 const word = (id, over = {}) => ({
-  id, srcLang: "en", tgtLang: "ko", word: "w" + id, meaning: "m" + id,
-  box: 0, due: 1000, createdAt: Number(id.replace(/\D/g, "")) || 1, ...over,
+  id,
+  srcLang: "en",
+  tgtLang: "ko",
+  word: "w" + id,
+  meaning: "m" + id,
+  box: 0,
+  due: 1000,
+  createdAt: Number(id.replace(/\D/g, "")) || 1,
+  ...over,
 });
 
 describe("remoteStore", () => {

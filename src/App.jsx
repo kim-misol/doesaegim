@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { LANGS, LANG_KEYS, otherLang } from "./lib/languages.js";
 import {
   createWord,
@@ -17,7 +17,12 @@ import {
   signInWithEmail,
   signOut,
 } from "./lib/supabase.js";
-import { wordsToJSON, wordsToCSV, wordsFromJSON, mergeWords } from "./lib/backup.js";
+import {
+  wordsToJSON,
+  wordsToCSV,
+  wordsFromJSON,
+  mergeWords,
+} from "./lib/backup.js";
 import { speak } from "./lib/speech.js";
 import { fetchMeanings, isAutocompleteAvailable } from "./lib/translate.js";
 
@@ -27,24 +32,59 @@ const cloudEnabled = isCloudConfigured();
 /* ───────────────────────── icons ───────────────────────── */
 
 const Speaker = ({ s = 20 }) => (
-  <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+  <svg
+    width={s}
+    height={s}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.7"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
     <path d="M11 5 6 9H3v6h3l5 4V5z" />
     <path d="M15.5 8.5a5 5 0 0 1 0 7" />
     <path d="M18.5 5.5a9 9 0 0 1 0 13" opacity="0.55" />
   </svg>
 );
 const IconHome = () => (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+  <svg
+    width="22"
+    height="22"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.7"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
     <path d="M4 7.5 12 3l8 4.5M5 10v9h14v-9" />
   </svg>
 );
 const IconPlus = () => (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round">
+  <svg
+    width="22"
+    height="22"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.7"
+    strokeLinecap="round"
+  >
     <path d="M12 6v12M6 12h12" />
   </svg>
 );
 const IconStack = () => (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+  <svg
+    width="22"
+    height="22"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.7"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
     <rect x="4" y="5" width="16" height="6" rx="2" />
     <path d="M5.5 14.5h13M7 18h10" opacity="0.6" />
   </svg>
@@ -64,7 +104,8 @@ export default function App() {
   useEffect(() => {
     if (typeof window !== "undefined" && window.speechSynthesis) {
       window.speechSynthesis.getVoices();
-      window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
+      window.speechSynthesis.onvoiceschanged = () =>
+        window.speechSynthesis.getVoices();
     }
   }, []);
 
@@ -82,8 +123,8 @@ export default function App() {
   // resolve the right store on auth change (remote when signed in, else local)
   useEffect(() => {
     let alive = true;
-    setReady(false);
     (async () => {
+      setReady(false);
       let store;
       if (cloudEnabled && user) {
         const sb = await getSupabase();
@@ -131,7 +172,12 @@ export default function App() {
         {!ready ? (
           <div className="vc-empty">불러오는 중…</div>
         ) : session ? (
-          <Review session={session} words={words} commit={commit} onExit={() => setSession(null)} />
+          <Review
+            session={session}
+            words={words}
+            commit={commit}
+            onExit={() => setSession(null)}
+          />
         ) : tab === "today" ? (
           <Today
             words={words}
@@ -154,10 +200,16 @@ export default function App() {
             ["add", "추가", IconPlus],
             ["list", "단어", IconStack],
           ].map(([key, label, Icon]) => (
-            <button key={key} className={`vc-tab ${tab === key ? "on" : ""}`} onClick={() => setTab(key)}>
+            <button
+              key={key}
+              className={`vc-tab ${tab === key ? "on" : ""}`}
+              onClick={() => setTab(key)}
+            >
               <Icon />
               <span>{label}</span>
-              {key === "today" && dueTotal > 0 && <i className="vc-badge">{dueTotal}</i>}
+              {key === "today" && dueTotal > 0 && (
+                <i className="vc-badge">{dueTotal}</i>
+              )}
             </button>
           ))}
         </nav>
@@ -175,7 +227,9 @@ function Today({ words, dueByLang, dueTotal, onStart, onAdd }) {
         <div className="vc-empty-mark">A → 가</div>
         <h2>첫 단어를 담아보세요</h2>
         <p>단어와 뜻을 저장하면 카드로 복습할 수 있어요.</p>
-        <button className="vc-cta" onClick={onAdd}>단어 추가하기</button>
+        <button className="vc-cta" onClick={onAdd}>
+          단어 추가하기
+        </button>
       </div>
     );
   }
@@ -195,11 +249,22 @@ function Today({ words, dueByLang, dueTotal, onStart, onAdd }) {
           const total = words.filter((w) => w.srcLang === l).length;
           const due = dueByLang[l];
           return (
-            <button key={l} className="vc-glass vc-langcard" disabled={due === 0} onClick={() => onStart(l)}>
-              <span className="vc-langtag" style={{ color: LANGS[l].tint }}>{LANGS[l].tag}</span>
+            <button
+              key={l}
+              className="vc-glass vc-langcard"
+              disabled={due === 0}
+              onClick={() => onStart(l)}
+            >
+              <span className="vc-langtag" style={{ color: LANGS[l].tint }}>
+                {LANGS[l].tag}
+              </span>
               <span className="vc-langname">{LANGS[l].label}</span>
-              <span className="vc-langmeta">{total === 0 ? "단어 없음" : `${total}개 저장`}</span>
-              <span className={`vc-duepill ${due ? "" : "ghost"}`}>{due ? `${due} 복습` : "완료"}</span>
+              <span className="vc-langmeta">
+                {total === 0 ? "단어 없음" : `${total}개 저장`}
+              </span>
+              <span className={`vc-duepill ${due ? "" : "ghost"}`}>
+                {due ? `${due} 복습` : "완료"}
+              </span>
             </button>
           );
         })}
@@ -214,7 +279,7 @@ function Review({ session, words, commit, onExit }) {
   const { lang } = session;
   const [dir, setDir] = useState(session.dir);
   const [queue, setQueue] = useState(() =>
-    words.filter((w) => w.srcLang === lang && isDue(w)).map((w) => w.id)
+    words.filter((w) => w.srcLang === lang && isDue(w)).map((w) => w.id),
   );
   const [flipped, setFlipped] = useState(false);
   const [done, setDone] = useState(0);
@@ -223,7 +288,9 @@ function Review({ session, words, commit, onExit }) {
 
   const grade = (remembered) => {
     if (!card) return;
-    commit((prev) => prev.map((w) => (w.id === card.id ? schedule(w, remembered) : w)));
+    commit((prev) =>
+      prev.map((w) => (w.id === card.id ? schedule(w, remembered) : w)),
+    );
     setQueue((q) => {
       const [, ...rest] = q;
       return remembered ? rest : [...rest, card.id];
@@ -235,12 +302,20 @@ function Review({ session, words, commit, onExit }) {
   if (!card) {
     return (
       <div className="vc-view">
-        <ReviewBar lang={lang} dir={dir} setDir={setDir} onExit={onExit} progress={1} />
+        <ReviewBar
+          lang={lang}
+          dir={dir}
+          setDir={setDir}
+          onExit={onExit}
+          progress={1}
+        />
         <div className="vc-empty-state slim">
           <div className="vc-empty-mark done">✓</div>
           <h2>복습 완료</h2>
           <p>{LANGS[lang].label} 카드를 모두 다뤘어요.</p>
-          <button className="vc-cta" onClick={onExit}>돌아가기</button>
+          <button className="vc-cta" onClick={onExit}>
+            돌아가기
+          </button>
         </div>
       </div>
     );
@@ -254,19 +329,32 @@ function Review({ session, words, commit, onExit }) {
 
   return (
     <div className="vc-view review">
-      <ReviewBar lang={lang} dir={dir} setDir={setDir} onExit={onExit} progress={progress} />
+      <ReviewBar
+        lang={lang}
+        dir={dir}
+        setDir={setDir}
+        onExit={onExit}
+        progress={progress}
+      />
       <div className="vc-remaining">{queue.length}장 남음</div>
 
       <div className="vc-cardwrap" onClick={() => setFlipped((f) => !f)}>
         <div className={`vc-card ${flipped ? "flipped" : ""}`}>
-          <Face side="front" text={front} lang={frontLang} hint={flipped ? "" : "탭하면 뒤집혀요"} />
+          <Face
+            side="front"
+            text={front}
+            lang={frontLang}
+            hint={flipped ? "" : "탭하면 뒤집혀요"}
+          />
           <Face side="back" text={back} lang={backLang} accent />
         </div>
       </div>
 
       {!flipped ? (
         <div className="vc-review-actions">
-          <button className="vc-revbtn full" onClick={() => setFlipped(true)}>뜻 확인</button>
+          <button className="vc-revbtn full" onClick={() => setFlipped(true)}>
+            뜻 확인
+          </button>
         </div>
       ) : (
         <div className="vc-review-actions two">
@@ -282,15 +370,25 @@ function Review({ session, words, commit, onExit }) {
   );
 }
 
-function ReviewBar({ lang, dir, setDir, onExit, progress }) {
+function ReviewBar({ dir, setDir, onExit, progress }) {
   return (
     <div className="vc-revbar">
       <button className="vc-iconbtn" onClick={onExit} aria-label="닫기">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          strokeLinecap="round"
+        >
           <path d="m15 5-7 7 7 7" />
         </svg>
       </button>
-      <div className="vc-progress"><i style={{ width: `${Math.round(progress * 100)}%` }} /></div>
+      <div className="vc-progress">
+        <i style={{ width: `${Math.round(progress * 100)}%` }} />
+      </div>
       <button
         className="vc-dirbtn"
         onClick={() => setDir((d) => (d === "forward" ? "reverse" : "forward"))}
@@ -305,11 +403,16 @@ function ReviewBar({ lang, dir, setDir, onExit, progress }) {
 function Face({ side, text, lang, hint, accent }) {
   return (
     <div className={`vc-face ${side} ${accent ? "accent" : ""}`}>
-      <span className="vc-face-tag" style={{ color: LANGS[lang].tint }}>{LANGS[lang].label}</span>
+      <span className="vc-face-tag" style={{ color: LANGS[lang].tint }}>
+        {LANGS[lang].label}
+      </span>
       <div className="vc-face-text">{text}</div>
       <button
         className="vc-speak"
-        onClick={(e) => { e.stopPropagation(); speak(text, LANGS[lang].code); }}
+        onClick={(e) => {
+          e.stopPropagation();
+          speak(text, LANGS[lang].code);
+        }}
         aria-label="발음 듣기"
       >
         <Speaker s={22} />
@@ -388,7 +491,12 @@ function AddWord({ onSave }) {
             placeholder={`${LANGS[srcLang].label} 단어 입력`}
             autoComplete="off"
           />
-          <button className="vc-mini" disabled={!word.trim()} onClick={() => speak(word, LANGS[srcLang].code)} aria-label="발음">
+          <button
+            className="vc-mini"
+            disabled={!word.trim()}
+            onClick={() => speak(word, LANGS[srcLang].code)}
+            aria-label="발음"
+          >
             <Speaker s={18} />
           </button>
         </div>
@@ -397,10 +505,24 @@ function AddWord({ onSave }) {
       {autocompleteEnabled && (
         <div className="vc-auto">
           <div className="vc-seg">
-            <button className={mode === "translate" ? "on" : ""} onClick={() => setMode("translate")}>번역 <i>AI</i></button>
-            <button className={mode === "dict" ? "on" : ""} onClick={() => setMode("dict")}>사전 <i>AI</i></button>
+            <button
+              className={mode === "translate" ? "on" : ""}
+              onClick={() => setMode("translate")}
+            >
+              번역 <i>AI</i>
+            </button>
+            <button
+              className={mode === "dict" ? "on" : ""}
+              onClick={() => setMode("dict")}
+            >
+              사전 <i>AI</i>
+            </button>
           </div>
-          <button className="vc-fetch" disabled={!word.trim() || loading} onClick={autocomplete}>
+          <button
+            className="vc-fetch"
+            disabled={!word.trim() || loading}
+            onClick={autocomplete}
+          >
             {loading ? "가져오는 중…" : "뜻 가져오기"}
           </button>
         </div>
@@ -411,7 +533,11 @@ function AddWord({ onSave }) {
       {suggestions.length > 0 && (
         <div className="vc-suggest">
           {suggestions.map((s, i) => (
-            <button key={i} className="vc-glass vc-sugg" onClick={() => setMeaning(s.meaning)}>
+            <button
+              key={i}
+              className="vc-glass vc-sugg"
+              onClick={() => setMeaning(s.meaning)}
+            >
               <span className="vc-sugg-main">{s.meaning}</span>
               {s.note ? <span className="vc-sugg-note">{s.note}</span> : null}
             </button>
@@ -429,13 +555,22 @@ function AddWord({ onSave }) {
             placeholder={`${LANGS[tgtLang].label} 뜻 (직접 입력 가능)`}
             autoComplete="off"
           />
-          <button className="vc-mini" disabled={!meaning.trim()} onClick={() => speak(meaning, LANGS[tgtLang].code)} aria-label="발음">
+          <button
+            className="vc-mini"
+            disabled={!meaning.trim()}
+            onClick={() => speak(meaning, LANGS[tgtLang].code)}
+            aria-label="발음"
+          >
             <Speaker s={18} />
           </button>
         </div>
       </div>
 
-      <button className="vc-cta wide" disabled={!word.trim() || !meaning.trim()} onClick={save}>
+      <button
+        className="vc-cta wide"
+        disabled={!word.trim() || !meaning.trim()}
+        onClick={save}
+      >
         {saved ? "저장됐어요 ✓" : "카드 저장"}
       </button>
     </div>
@@ -472,7 +607,9 @@ function WordList({ words, commit }) {
     return (
       <div className="vc-view">
         <BackupBar words={words} commit={commit} />
-        <div className="vc-empty-state slim"><p>아직 저장된 단어가 없어요.</p></div>
+        <div className="vc-empty-state slim">
+          <p>아직 저장된 단어가 없어요.</p>
+        </div>
       </div>
     );
   }
@@ -482,7 +619,11 @@ function WordList({ words, commit }) {
       <BackupBar words={words} commit={commit} />
       <div className="vc-chips">
         {["all", ...LANG_KEYS].map((f) => (
-          <button key={f} className={`vc-chip ${filter === f ? "on" : ""}`} onClick={() => setFilter(f)}>
+          <button
+            key={f}
+            className={`vc-chip ${filter === f ? "on" : ""}`}
+            onClick={() => setFilter(f)}
+          >
             {f === "all" ? "전체" : LANGS[f].label}
           </button>
         ))}
@@ -492,9 +633,13 @@ function WordList({ words, commit }) {
         {list.map((w) => (
           <div key={w.id} className="vc-glass vc-listitem">
             <div className="vc-li-tags">
-              <span style={{ color: LANGS[w.srcLang].tint }}>{LANGS[w.srcLang].tag}</span>
+              <span style={{ color: LANGS[w.srcLang].tint }}>
+                {LANGS[w.srcLang].tag}
+              </span>
               <span className="vc-li-arrow">→</span>
-              <span style={{ color: LANGS[w.tgtLang].tint }}>{LANGS[w.tgtLang].tag}</span>
+              <span style={{ color: LANGS[w.tgtLang].tint }}>
+                {LANGS[w.tgtLang].tag}
+              </span>
             </div>
             <div className="vc-li-body">
               <div className="vc-li-word">{w.word}</div>
@@ -503,11 +648,29 @@ function WordList({ words, commit }) {
             <div className="vc-li-side">
               <span className="vc-li-due">{dueLabel(w.due)}</span>
               <div className="vc-li-acts">
-                <button className="vc-mini ghost" onClick={() => speak(w.word, LANGS[w.srcLang].code)} aria-label="발음">
+                <button
+                  className="vc-mini ghost"
+                  onClick={() => speak(w.word, LANGS[w.srcLang].code)}
+                  aria-label="발음"
+                >
                   <Speaker s={16} />
                 </button>
-                <button className="vc-mini ghost del" onClick={() => commit((prev) => prev.filter((x) => x.id !== w.id))} aria-label="삭제">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+                <button
+                  className="vc-mini ghost del"
+                  onClick={() =>
+                    commit((prev) => prev.filter((x) => x.id !== w.id))
+                  }
+                  aria-label="삭제"
+                >
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                  >
                     <path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13" />
                   </svg>
                 </button>
@@ -530,7 +693,9 @@ function AccountBar({ user }) {
     return (
       <div className="vc-account">
         <span className="vc-account-email">{user.email}</span>
-        <button className="vc-mini ghost" onClick={() => signOut()}>로그아웃</button>
+        <button className="vc-mini ghost" onClick={() => signOut()}>
+          로그아웃
+        </button>
       </div>
     );
   }
@@ -587,15 +752,28 @@ function BackupBar({ words, commit }) {
 
   return (
     <div className="vc-backup">
-      <button className="vc-mini ghost" onClick={() => download("doesaegim.json", wordsToJSON(words), "application/json")}>
+      <button
+        className="vc-mini ghost"
+        onClick={() =>
+          download("doesaegim.json", wordsToJSON(words), "application/json")
+        }
+      >
         JSON 내보내기
       </button>
-      <button className="vc-mini ghost" onClick={() => download("doesaegim.csv", wordsToCSV(words), "text/csv")}>
+      <button
+        className="vc-mini ghost"
+        onClick={() => download("doesaegim.csv", wordsToCSV(words), "text/csv")}
+      >
         CSV
       </button>
       <label className="vc-mini ghost vc-import">
         가져오기
-        <input type="file" accept=".json,application/json" onChange={onImport} hidden />
+        <input
+          type="file"
+          accept=".json,application/json"
+          onChange={onImport}
+          hidden
+        />
       </label>
     </div>
   );
