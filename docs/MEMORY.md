@@ -5,6 +5,14 @@
 
 ---
 
+## 2026-07-24 · README 최신화 + 배포 빌드 시크릿 누락 발견
+
+- 한 일: README 전면 갱신 — 언어 5개(es/it/de로 교체), Aurora Glass, 오늘 진행률 링, 클라우드 동기화/백업, 63개 테스트, Makefile/lint/format 반영. 완료된 로드맵 항목·중복 설명(토큰 최적화 상세 등)은 정리하고 `docs/SUPABASE.md`/`PROXY.md` 링크로 대체. `package.json` description도 갱신. GitHub Actions API로 최신 커밋(6e54e4e)의 CI·Deploy 워크플로우가 성공했음을 확인, 라이브 사이트(https://kim-misol.github.io/doesaegim/) HTTP 200 확인.
+- 발견한 문제: 배포된 번들에 `supabase` 문자열이 0건(로컬 빌드는 2건) — `deploy.yml`이 `VITE_SUPABASE_URL`/`VITE_SUPABASE_ANON_KEY`/`VITE_TRANSLATE_ENDPOINT`를 빌드 시 주입하지 않아 **라이브 사이트에서 클라우드 동기화·AI 자동완성이 조용히 꺼져 있었음**. `deploy.yml`의 build 스텝에 해당 env(`secrets.*`)를 추가했지만, 실제로 켜지려면 저장소 Settings → Secrets and variables → Actions에 세 값을 등록해야 함(사용자 액션 필요).
+- 변경 파일: README.md, package.json, .github/workflows/deploy.yml, docs/MEMORY.md
+
+---
+
 ## 2026-07-24 · 오늘 진행률 히어로(남은 수 + 링)
 
 - 한 일: Today 히어로를 글래스 카드로 바꾸고 남은 복습 수(큰 숫자) + 진행률 링(conic) 추가. 진행률 = passedToday/(passedToday+dueTotal). `dailyStats.js`(device-local 일일 카운터, 날짜 변경 시 자동 리셋) 신설 + 테스트 4개. Review에서 "기억했어요"(remembered) 채점 시 `onPass`로 카운트 bump.

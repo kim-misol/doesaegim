@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "description": "되새김 — a minimal black flashcard app for Korean, English, and French with spaced repetition.",
+  "description": "되새김 — a minimal flashcard app for Korean, English, Spanish, Italian, and German with spaced repetition and optional cloud sync.",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
