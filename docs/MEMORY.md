@@ -13,6 +13,16 @@
 
 ---
 
+## 2026-07-24 · 단어 수정 기능 + 모바일 발화 수정 + 중복 경고 시안
+
+- 단어 수정(#2): WordList에 인라인 편집 추가(연필 아이콘 → word/meaning 입력 + 저장/취소). commit으로 갱신 → 클라우드 동기화. SRS(box/due) 유지.
+- 모바일 소리(#3): speech.js `speak`을 견고화 — `synth.resume()`, "재생 중일 때만" cancel(iOS는 무조건 cancel 시 무음), volume=1. `primeSpeech()` 추가 + App에서 첫 탭(pointerdown/touchend)에 언락. fake synth 테스트 3개.
+- 중복 경고(#1): 요청대로 HTML 시안만 — design/duplicate-word.html(데스크톱 웹 + 모바일 웹). 입력 중 중복 감지 시 "이미 저장한 단어예요" + 저장된 뜻 카드 + [카드 보기]/[그래도 저장]. (앱 구현은 미착수)
+- 변경 파일: src/App.jsx, src/styles.css, src/lib/speech.js(+test), design/duplicate-word.html. 총 87 그린, 빌드 OK.
+- 참고: 모바일 무음이 하드웨어 음소거 스위치 때문이면 코드로 못 고침(안내 필요).
+
+---
+
 ## 2026-07-24 · 기기 간 설정 동기화 (진행률·언어순서) + 포커스 새로고침
 
 - 증상: 같은 계정 여러 기기에서 단어는 동기화되는데 복습 진행률·언어별 순서가 제각각. 원인: `daily_stats_v1`(진행률 카운터)·`lang_order_v1`(순서)를 device-local localStorage에 저장.

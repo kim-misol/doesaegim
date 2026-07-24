@@ -31,7 +31,7 @@ import {
   wordsFromJSON,
   mergeWords,
 } from "./lib/backup.js";
-import { speak } from "./lib/speech.js";
+import { speak, primeSpeech } from "./lib/speech.js";
 import { papagoUrl, naverDictUrl } from "./lib/lookup.js";
 
 const cloudEnabled = isCloudConfigured();
@@ -255,13 +255,24 @@ export default function App() {
     orderRef.current?.save(next);
   }, []);
 
-  // preload speech voices
+  // preload speech voices + unlock audio on the first tap (mobile browsers
+  // require a user-gesture-initiated speak() before TTS is audible)
   useEffect(() => {
-    if (typeof window !== "undefined" && window.speechSynthesis) {
+    if (typeof window === "undefined" || !window.speechSynthesis) return;
+    window.speechSynthesis.getVoices();
+    window.speechSynthesis.onvoiceschanged = () =>
       window.speechSynthesis.getVoices();
-      window.speechSynthesis.onvoiceschanged = () =>
-        window.speechSynthesis.getVoices();
-    }
+    const unlock = () => {
+      primeSpeech();
+      window.removeEventListener("pointerdown", unlock);
+      window.removeEventListener("touchend", unlock);
+    };
+    window.addEventListener("pointerdown", unlock, { once: true });
+    window.addEventListener("touchend", unlock, { once: true });
+    return () => {
+      window.removeEventListener("pointerdown", unlock);
+      window.removeEventListener("touchend", unlock);
+    };
   }, []);
 
   // track auth state (cloud mode only)
@@ -316,8 +327,14 @@ export default function App() {
         ?.load()
         .then((w) => Array.isArray(w) && setWords(w))
         .catch(() => {});
-      statsRef.current?.load().then(setPassedToday).catch(() => {});
-      orderRef.current?.load().then(setLangOrder).catch(() => {});
+      statsRef.current
+        ?.load()
+        .then(setPassedToday)
+        .catch(() => {});
+      orderRef.current
+        ?.load()
+        .then(setLangOrder)
+        .catch(() => {});
     };
     document.addEventListener("visibilitychange", refresh);
     window.addEventListener("focus", refresh);
@@ -813,7 +830,24 @@ function LangPicker({ label, value, onChange }) {
 
 function WordList({ words, commit }) {
   const [filter, setFilter] = useState("all");
+  const [editingId, setEditingId] = useState(null);
+  const [draft, setDraft] = useState({ word: "", meaning: "" });
   const list = words.filter((w) => filter === "all" || w.srcLang === filter);
+
+  const startEdit = (w) => {
+    setEditingId(w.id);
+    setDraft({ word: w.word, meaning: w.meaning });
+  };
+  const cancelEdit = () => setEditingId(null);
+  const saveEdit = (id) => {
+    const word = draft.word.trim();
+    const meaning = draft.meaning.trim();
+    if (!word || !meaning) return;
+    commit((prev) =>
+      prev.map((x) => (x.id === id ? { ...x, word, meaning } : x)),
+    );
+    setEditingId(null);
+  };
 
   if (words.length === 0) {
     return (
@@ -842,54 +876,121 @@ function WordList({ words, commit }) {
       </div>
 
       <div className="vc-list">
-        {list.map((w) => (
-          <div key={w.id} className="vc-glass vc-listitem">
-            <div className="vc-li-tags">
-              <span style={{ color: LANGS[w.srcLang].tint }}>
-                {LANGS[w.srcLang].tag}
-              </span>
-              <span className="vc-li-arrow">→</span>
-              <span style={{ color: LANGS[w.tgtLang].tint }}>
-                {LANGS[w.tgtLang].tag}
-              </span>
-            </div>
-            <div className="vc-li-body">
-              <div className="vc-li-word">{w.word}</div>
-              <div className="vc-li-meaning">{w.meaning}</div>
-            </div>
-            <div className="vc-li-side">
-              <span className="vc-li-due">{dueLabel(w.due)}</span>
-              <div className="vc-li-acts">
-                <button
-                  className="vc-mini ghost"
-                  onClick={() => speak(w.word, LANGS[w.srcLang].code)}
-                  aria-label="발음"
-                >
-                  <Speaker s={16} />
-                </button>
-                <button
-                  className="vc-mini ghost del"
-                  onClick={() =>
-                    commit((prev) => prev.filter((x) => x.id !== w.id))
+        {list.map((w) =>
+          editingId === w.id ? (
+            <div key={w.id} className="vc-glass vc-listitem editing">
+              <div className="vc-li-edit">
+                <div className="vc-li-edit-tags">
+                  <span style={{ color: LANGS[w.srcLang].tint }}>
+                    {LANGS[w.srcLang].tag}
+                  </span>
+                  <span className="vc-li-arrow">→</span>
+                  <span style={{ color: LANGS[w.tgtLang].tint }}>
+                    {LANGS[w.tgtLang].tag}
+                  </span>
+                </div>
+                <input
+                  className="vc-input"
+                  value={draft.word}
+                  onChange={(e) =>
+                    setDraft((d) => ({ ...d, word: e.target.value }))
                   }
-                  aria-label="삭제"
-                >
-                  <svg
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.8"
-                    strokeLinecap="round"
+                  placeholder="단어"
+                  autoComplete="off"
+                  autoFocus
+                />
+                <input
+                  className="vc-input"
+                  value={draft.meaning}
+                  onChange={(e) =>
+                    setDraft((d) => ({ ...d, meaning: e.target.value }))
+                  }
+                  placeholder="뜻"
+                  autoComplete="off"
+                  onKeyDown={(e) => e.key === "Enter" && saveEdit(w.id)}
+                />
+                <div className="vc-li-edit-acts">
+                  <button className="vc-editbtn" onClick={cancelEdit}>
+                    취소
+                  </button>
+                  <button
+                    className="vc-editbtn primary"
+                    disabled={!draft.word.trim() || !draft.meaning.trim()}
+                    onClick={() => saveEdit(w.id)}
                   >
-                    <path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13" />
-                  </svg>
-                </button>
+                    저장
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          ) : (
+            <div key={w.id} className="vc-glass vc-listitem">
+              <div className="vc-li-tags">
+                <span style={{ color: LANGS[w.srcLang].tint }}>
+                  {LANGS[w.srcLang].tag}
+                </span>
+                <span className="vc-li-arrow">→</span>
+                <span style={{ color: LANGS[w.tgtLang].tint }}>
+                  {LANGS[w.tgtLang].tag}
+                </span>
+              </div>
+              <div className="vc-li-body">
+                <div className="vc-li-word">{w.word}</div>
+                <div className="vc-li-meaning">{w.meaning}</div>
+              </div>
+              <div className="vc-li-side">
+                <span className="vc-li-due">{dueLabel(w.due)}</span>
+                <div className="vc-li-acts">
+                  <button
+                    className="vc-mini ghost"
+                    onClick={() => speak(w.word, LANGS[w.srcLang].code)}
+                    aria-label="발음"
+                  >
+                    <Speaker s={16} />
+                  </button>
+                  <button
+                    className="vc-mini ghost"
+                    onClick={() => startEdit(w)}
+                    aria-label="수정"
+                  >
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.8"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M12 20h9" />
+                      <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" />
+                    </svg>
+                  </button>
+                  <button
+                    className="vc-mini ghost del"
+                    onClick={() =>
+                      commit((prev) => prev.filter((x) => x.id !== w.id))
+                    }
+                    aria-label="삭제"
+                  >
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.8"
+                      strokeLinecap="round"
+                    >
+                      <path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          ),
+        )}
       </div>
     </div>
   );

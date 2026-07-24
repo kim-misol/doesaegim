@@ -833,6 +833,54 @@ body {
   cursor: default;
 }
 
+/* inline word editor (word list) */
+.vc-listitem.editing {
+  display: block;
+  padding: 14px;
+}
+.vc-li-edit {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.vc-li-edit-tags {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: ui-monospace, Menlo, monospace;
+  font-size: 11px;
+  font-weight: 700;
+}
+.vc-li-edit .vc-input {
+  font-size: 15px;
+  padding: 12px 14px;
+}
+.vc-li-edit-acts {
+  display: flex;
+  gap: 8px;
+  margin-top: 2px;
+}
+.vc-editbtn {
+  flex: 1;
+  padding: 11px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: var(--glass);
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 640;
+  cursor: pointer;
+}
+.vc-editbtn.primary {
+  background: linear-gradient(140deg, var(--v), var(--p));
+  border: none;
+  color: #fff;
+}
+.vc-editbtn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
 /* Papago / Naver quick-lookup buttons */
 .vc-lookup {
   display: flex;

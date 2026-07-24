@@ -20,7 +20,10 @@ function fakeClient() {
             },
             maybeSingle: async () => {
               const key = `${uid}|${kk}`;
-              return { data: key in store ? { value: store[key] } : null, error: null };
+              return {
+                data: key in store ? { value: store[key] } : null,
+                error: null,
+              };
             },
           };
           return chain;
@@ -64,7 +67,9 @@ describe("supabaseKvBackend", () => {
     const b = supabaseKvBackend(client, "u1");
     expect(await createDailyStats(b).load()).toBe(2);
     expect(await createLangOrderStore(b, ["ko", "en", "es"]).load()).toEqual([
-      "es", "ko", "en",
+      "es",
+      "ko",
+      "en",
     ]);
   });
 });

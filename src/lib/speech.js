@@ -20,6 +20,25 @@ export function pickVoice(voices, langCode) {
   );
 }
 
+// Some mobile browsers (esp. iOS Safari) auto-suspend the synth and require a
+// speak() triggered inside a user gesture to "unlock" audio. primeSpeech()
+// should be called once from the first tap so later speak() calls are audible.
+let primed = false;
+export function primeSpeech(
+  synth = typeof window !== "undefined" ? window.speechSynthesis : null,
+) {
+  if (primed || !synth) return;
+  try {
+    synth.resume?.();
+    const u = new SpeechSynthesisUtterance("");
+    u.volume = 0;
+    synth.speak(u);
+    primed = true;
+  } catch {
+    /* ignore */
+  }
+}
+
 export function speak(
   text,
   langCode,
@@ -27,15 +46,20 @@ export function speak(
 ) {
   if (!text || !synth) return false;
   try {
-    synth.cancel();
+    // Mobile engines often pause themselves; wake it up first.
+    synth.resume?.();
+    // Only cancel if something is actually playing — an unconditional cancel()
+    // right before speak() swallows the audio on iOS.
+    if (synth.speaking || synth.pending) synth.cancel();
     const u = new SpeechSynthesisUtterance(text);
     u.lang = langCode; // always set so the engine targets the right language
+    u.rate = 0.95;
+    u.volume = 1;
     const v = pickVoice(synth.getVoices ? synth.getVoices() : [], langCode);
     if (v) {
       u.voice = v;
       u.lang = v.lang; // match the chosen voice's exact locale
     }
-    u.rate = 0.95;
     synth.speak(u);
     return true;
   } catch {
