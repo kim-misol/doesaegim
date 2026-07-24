@@ -13,6 +13,7 @@ import {
   selectBackend,
 } from "./lib/storage.js";
 import { createDailyStats } from "./lib/dailyStats.js";
+import { createLangOrderStore, moveItem } from "./lib/langOrder.js";
 import { createRemoteWordStore } from "./lib/remoteStore.js";
 import {
   isCloudConfigured,
@@ -208,8 +209,10 @@ export default function App() {
   const [session, setSession] = useState(null);
   const [user, setUser] = useState(null);
   const [passedToday, setPassedToday] = useState(0);
+  const [langOrder, setLangOrder] = useState(LANG_KEYS);
   const storeRef = useRef(null);
   const statsRef = useRef(null);
+  const orderRef = useRef(null);
 
   // device-local daily progress counter (cards passed today)
   useEffect(() => {
@@ -217,9 +220,20 @@ export default function App() {
     statsRef.current.load().then(setPassedToday);
   }, []);
 
+  // device-local user-defined order of the language review cards
+  useEffect(() => {
+    orderRef.current = createLangOrderStore(selectBackend(), LANG_KEYS);
+    orderRef.current.load().then(setLangOrder);
+  }, []);
+
   const onPass = useCallback(() => {
     if (statsRef.current) statsRef.current.bump().then(setPassedToday);
     else setPassedToday((n) => n + 1);
+  }, []);
+
+  const reorderLangs = useCallback((next) => {
+    setLangOrder(next);
+    orderRef.current?.save(next);
   }, []);
 
   // preload speech voices
@@ -307,6 +321,8 @@ export default function App() {
             dueByLang={dueByLang}
             dueTotal={dueTotal}
             passedToday={passedToday}
+            order={langOrder}
+            onReorder={reorderLangs}
             onStart={(lang) => setSession({ lang, dir: "forward" })}
             onAdd={() => setTab("add")}
           />
@@ -349,9 +365,53 @@ function Today({
   dueByLang,
   dueTotal,
   passedToday = 0,
+  order = LANG_KEYS,
+  onReorder,
   onStart,
   onAdd,
 }) {
+  const [ord, setOrd] = useState(order);
+  const [draggingKey, setDraggingKey] = useState(null);
+  const moved = useRef(false);
+  const ordRef = useRef(order);
+
+  useEffect(() => {
+    setOrd(order);
+    ordRef.current = order;
+  }, [order]);
+
+  const onGripDown = (e, key) => {
+    e.stopPropagation();
+    try {
+      e.currentTarget.setPointerCapture(e.pointerId);
+    } catch {
+      /* ignore */
+    }
+    moved.current = false;
+    setDraggingKey(key);
+  };
+  const onGripMove = (e) => {
+    if (!draggingKey) return;
+    const el = document.elementFromPoint(e.clientX, e.clientY);
+    const card = el && el.closest("[data-langkey]");
+    const over = card && card.getAttribute("data-langkey");
+    if (!over || over === draggingKey) return;
+    setOrd((cur) => {
+      const from = cur.indexOf(draggingKey);
+      const to = cur.indexOf(over);
+      if (from < 0 || to < 0 || from === to) return cur;
+      moved.current = true;
+      const next = moveItem(cur, from, to);
+      ordRef.current = next;
+      return next;
+    });
+  };
+  const onGripUp = () => {
+    if (!draggingKey) return;
+    setDraggingKey(null);
+    if (moved.current && onReorder) onReorder(ordRef.current);
+  };
+
   if (words.length === 0) {
     return (
       <div className="vc-empty-state">
@@ -385,18 +445,36 @@ function Today({
         </div>
       </div>
 
-      <div className="vc-section-label">언어별 복습</div>
+      <div className="vc-section-label">언어별 복습 · 길게 눌러 순서 변경</div>
       <div className="vc-lang-grid">
-        {LANG_KEYS.map((l) => {
+        {ord.map((l) => {
           const total = words.filter((w) => w.srcLang === l).length;
           const due = dueByLang[l];
           return (
-            <button
+            <div
               key={l}
-              className="vc-glass vc-langcard"
-              disabled={due === 0}
-              onClick={() => onStart(l)}
+              data-langkey={l}
+              className={`vc-glass vc-langcard ${due ? "" : "off"} ${
+                draggingKey === l ? "dragging" : ""
+              }`}
+              role="button"
+              tabIndex={0}
+              onClick={() => due && onStart(l)}
+              onKeyDown={(e) =>
+                (e.key === "Enter" || e.key === " ") && due && onStart(l)
+              }
             >
+              <span
+                className="vc-drag"
+                aria-label="순서 변경 손잡이"
+                title="드래그해서 순서 변경"
+                onPointerDown={(e) => onGripDown(e, l)}
+                onPointerMove={onGripMove}
+                onPointerUp={onGripUp}
+                onClick={(e) => e.stopPropagation()}
+              >
+                ⠿
+              </span>
               <span className="vc-langtag" style={{ color: LANGS[l].tint }}>
                 {LANGS[l].tag}
               </span>
@@ -407,7 +485,7 @@ function Today({
               <span className={`vc-duepill ${due ? "" : "ghost"}`}>
                 {due ? `${due} 복습` : "완료"}
               </span>
-            </button>
+            </div>
           );
         })}
       </div>

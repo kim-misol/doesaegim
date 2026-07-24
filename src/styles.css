@@ -223,10 +223,10 @@ body {
 }
 .vc-langcard {
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: auto auto 1fr auto;
   align-items: center;
   gap: 12px;
-  padding: 18px;
+  padding: 18px 18px 18px 12px;
   text-align: left;
   cursor: pointer;
   color: var(--ink);
@@ -234,7 +234,8 @@ body {
   transition:
     transform 0.15s ease,
     box-shadow 0.2s ease,
-    border-color 0.2s ease;
+    border-color 0.2s ease,
+    opacity 0.2s ease;
 }
 .vc-langcard:nth-child(2) {
   animation-delay: -3s;
@@ -245,20 +246,47 @@ body {
 .vc-langcard:nth-child(4) {
   animation-delay: -9s;
 }
-.vc-langcard:hover:not(:disabled) {
+.vc-langcard:hover:not(.off):not(.dragging) {
   transform: translateY(-2px);
   border-color: var(--line2);
   box-shadow:
     var(--lg-shadow),
     0 22px 44px -24px rgba(139, 123, 255, 0.55);
 }
-.vc-langcard:disabled {
+.vc-langcard.off {
   opacity: 0.5;
   cursor: default;
   animation: none;
 }
+.vc-langcard.dragging {
+  animation: none;
+  opacity: 0.96;
+  transform: scale(1.03);
+  border-color: var(--line2);
+  box-shadow:
+    var(--lg-shadow),
+    0 26px 50px -20px rgba(139, 123, 255, 0.7);
+  z-index: 5;
+}
+/* drag handle */
+.vc-drag {
+  grid-row: 1 / 3;
+  grid-column: 1;
+  align-self: center;
+  color: var(--ink2);
+  font-size: 18px;
+  line-height: 1;
+  padding: 6px 2px;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+.vc-drag:active {
+  cursor: grabbing;
+}
 .vc-langtag {
   grid-row: 1 / 3;
+  grid-column: 2;
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: 13px;
   font-weight: 700;
@@ -272,18 +300,19 @@ body {
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35);
 }
 .vc-langname {
+  grid-column: 3;
   font-size: 16px;
   font-weight: 600;
 }
 .vc-langmeta {
-  grid-column: 2;
+  grid-column: 3;
   font-size: 12px;
   color: var(--ink2);
   margin-top: 1px;
 }
 .vc-duepill {
   grid-row: 1 / 3;
-  grid-column: 3;
+  grid-column: 4;
   font-size: 13px;
   font-weight: 600;
   padding: 7px 13px;

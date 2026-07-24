@@ -13,6 +13,14 @@
 
 ---
 
+## 2026-07-24 · 언어별 복습 순서 드래그 변경
+
+- 한 일: Today 언어 카드에 그립 핸들(⠿) 추가, 포인터 기반 DnD(터치+마우스, 라이브 재정렬)로 순서 변경. 순서는 device-local 저장(`langOrder.js` — normalizeOrder/moveItem/createLangOrderStore). langcard를 button→div(role=button)로 바꾸고 그리드 열 추가(그립). 테스트 7개(정규화·이동) → 총 77 그린.
+- 결정/이유: 모바일 우선이라 HTML5 DnD 대신 pointer 이벤트+elementFromPoint. 손잡이 드래그만 재정렬, 본문 탭은 복습 시작(충돌 방지). 순서 저장은 로그인 무관 로컬. 언어 추가/삭제 시 normalizeOrder로 안전.
+- 변경 파일: src/App.jsx, src/styles.css, src/lib/langOrder.js(+test). 빌드 OK.
+
+---
+
 ## 2026-07-24 · Papago/Naver 바로가기 + 발음 언어 수정
 
 - 한 일: AddWord의 Claude 자동완성(번역/사전 AI)을 제거하고 **Papago 번역 · Naver 사전 바로가기 버튼**으로 교체(`lookup.js` — papagoUrl/naverDictUrl, 새 탭 오픈, API·비용 0). 발음(speech.js) 개선: pickVoice가 지역 정규화(underscore)→정확 매칭→기본언어 폴백→기기 내장(localService) 우선으로 선택하고, `speak`이 선택된 voice의 lang으로 utterance.lang을 맞춤. `hasVoiceFor` 추가. 테스트 lookup 5 + speech 5 (총 70 그린).
