@@ -98,107 +98,20 @@ const IconStack = () => (
   </svg>
 );
 
-/* ───────────────────── liquid aurora background ───────────────────── */
-
+/* ───────────────────── liquid aurora background ─────────────────────
+ * Each blob is its own compositor layer: filter:blur() is applied to a
+ * *static* shape and rasterized once, so the drift animation below only
+ * moves that cached texture via transform (GPU, cheap) instead of asking
+ * the browser to recompute a Gaussian blur every frame (CPU, expensive —
+ * that's what the old SVG feGaussianBlur/feBlend "goo" filter did).
+ */
 function AuroraBg() {
   return (
     <div className="vc-aurora" aria-hidden="true">
-      <svg width="0" height="0" style={{ position: "absolute" }}>
-        <defs>
-          <filter id="vc-goo">
-            <feGaussianBlur in="SourceGraphic" stdDeviation="18" result="b" />
-            <feColorMatrix
-              in="b"
-              type="matrix"
-              values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 22 -9"
-              result="goo"
-            />
-            <feBlend in="SourceGraphic" in2="goo" />
-          </filter>
-        </defs>
-      </svg>
-      <svg
-        className="vc-aurora-svg"
-        viewBox="0 0 390 820"
-        preserveAspectRatio="xMidYMid slice"
-      >
-        <g filter="url(#vc-goo)">
-          <circle fill="#8b7bff" r="110" cx="90" cy="150">
-            <animate
-              attributeName="cx"
-              values="90;170;60;90"
-              dur="16s"
-              repeatCount="indefinite"
-            />
-            <animate
-              attributeName="cy"
-              values="150;110;210;150"
-              dur="19s"
-              repeatCount="indefinite"
-            />
-            <animate
-              attributeName="r"
-              values="110;128;100;110"
-              dur="14s"
-              repeatCount="indefinite"
-            />
-          </circle>
-          <circle fill="#4fd6e6" r="92" cx="300" cy="190">
-            <animate
-              attributeName="cx"
-              values="300;240;330;300"
-              dur="20s"
-              repeatCount="indefinite"
-            />
-            <animate
-              attributeName="cy"
-              values="190;260;150;190"
-              dur="15s"
-              repeatCount="indefinite"
-            />
-            <animate
-              attributeName="r"
-              values="92;108;82;92"
-              dur="17s"
-              repeatCount="indefinite"
-            />
-          </circle>
-          <circle fill="#ff8bc4" r="86" cx="170" cy="300">
-            <animate
-              attributeName="cx"
-              values="170;120;230;170"
-              dur="18s"
-              repeatCount="indefinite"
-            />
-            <animate
-              attributeName="cy"
-              values="300;350;270;300"
-              dur="21s"
-              repeatCount="indefinite"
-            />
-            <animate
-              attributeName="r"
-              values="86;104;78;86"
-              dur="15s"
-              repeatCount="indefinite"
-            />
-          </circle>
-          <circle fill="#7c5cff" r="70" cx="300" cy="430">
-            <animate
-              attributeName="cx"
-              values="300;250;330;300"
-              dur="19s"
-              repeatCount="indefinite"
-            />
-            <animate
-              attributeName="cy"
-              values="430;390;470;430"
-              dur="16s"
-              repeatCount="indefinite"
-            />
-          </circle>
-        </g>
-      </svg>
+      <div className="vc-aurora-blob a" />
+      <div className="vc-aurora-blob b" />
+      <div className="vc-aurora-blob c" />
+      <div className="vc-aurora-blob d" />
     </div>
   );
 }
@@ -432,12 +345,20 @@ function Today({
   onAdd,
 }) {
   const [ord, setOrd] = useState(order);
+  const [prevOrder, setPrevOrder] = useState(order);
   const [draggingKey, setDraggingKey] = useState(null);
   const moved = useRef(false);
   const ordRef = useRef(order);
 
-  useEffect(() => {
+  // Sync local (draggable) order when the prop changes, without the extra
+  // render+effect pass a useEffect would cost (react.dev: "adjusting state
+  // when a prop changes"). The ref itself is only read/written from event
+  // handlers, so its sync stays in an effect.
+  if (order !== prevOrder) {
+    setPrevOrder(order);
     setOrd(order);
+  }
+  useEffect(() => {
     ordRef.current = order;
   }, [order]);
 

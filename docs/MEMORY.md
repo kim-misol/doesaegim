@@ -5,6 +5,19 @@
 
 ---
 
+## 2026-07-25 · 렌더링 성능 최적화 (아우로라·리스트 애니메이션·리렌더)
+
+- 증상: "속도가 너무 느려" — 코드 리딩으로 원인 특정(프로파일러 없이 정적 분석).
+- 원인 1(가장 큼): `AuroraBg`가 SVG `feGaussianBlur`+`feColorMatrix`+`feBlend` 필터를 4개 도형에 SMIL `<animate>`로 무한 반복 적용 — 모든 화면에서 매 프레임 블러를 재계산(합성 불가, CPU/GPU 부담 큼, 특히 모바일 Safari).
+- 원인 2: `.vc-listitem`(단어 목록의 각 행)에 `vc-wobble`(border-radius 애니메이션, 합성 불가·페인트 유발) 무한 반복 — 단어 개수만큼 O(n)으로 상시 리페인트, 목록이 길수록 악화.
+- 원인 3: `Today`의 언어 순서(`ord`)를 `useEffect`로 prop과 동기화하던 패턴이 매 순서 변경마다 이중 렌더(커밋 후 effect→재커밋) 유발 — eslint `react-hooks/set-state-in-effect`가 실제로 잡아냄.
+- 한 일: (1) `AuroraBg`를 SVG 필터→도형별 독립 `filter: blur()` + `transform`만 애니메이션하는 CSS 블롭 4개로 교체(블러는 컴포지터 레이어에 1회만 래스터라이즈, drift는 GPU 트랜스폼). (2) `.vc-listitem`의 `vc-wobble` 애니메이션 제거(정적 `border-radius`는 `.vc-glass`가 계속 제공). (3) `Today`의 order 동기화를 렌더 중 조건부 setState로 변경(react.dev "adjusting state when a prop changes" 패턴), ref 동기화만 별도 effect로 분리.
+- 결정/이유: 시각 디자인(Aurora Glass 룩)은 그대로 유지 — backdrop-filter 반경/투명도 등은 건드리지 않음. 순수하게 "매 프레임 반복되는 비용"만 제거.
+- 변경 파일: src/App.jsx(AuroraBg, Today order sync), src/styles.css(.vc-aurora*, .vc-listitem, reduced-motion 셀렉터). 테스트 92개 그린, lint/format 클린, 빌드 OK(JS 172.97→171.31kB, 실질 동일).
+- 후속(미착수, 범위 밖이라 보류): 로그인 시 `getSupabase()`를 두 effect가 동시 호출하면 경합으로 한쪽이 null을 받아 KV 백엔드가 로컬로 폴백하는 레이스 발견 — in-flight 프라미스 공유로 고치면 됨. 클라우드 데이터 로딩(단어/통계/순서)도 여전히 로그인 후 여러 번의 순차 네트워크 왕복이라 초기 "불러오는 중" 체감 지연의 원인일 수 있음.
+
+---
+
 ## 2026-07-24 · README 최신화 + 배포 빌드 시크릿 누락 발견
 
 - 한 일: README 전면 갱신 — 언어 5개(es/it/de로 교체), Aurora Glass, 오늘 진행률 링, 클라우드 동기화/백업, 63개 테스트, Makefile/lint/format 반영. 완료된 로드맵 항목·중복 설명(토큰 최적화 상세 등)은 정리하고 `docs/SUPABASE.md`/`PROXY.md` 링크로 대체. `package.json` description도 갱신. GitHub Actions API로 최신 커밋(6e54e4e)의 CI·Deploy 워크플로우가 성공했음을 확인, 라이브 사이트(https://kim-misol.github.io/doesaegim/) HTTP 200 확인.

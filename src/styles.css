@@ -57,7 +57,10 @@ body {
   overflow-x: hidden;
 }
 
-/* ── liquid aurora background ── */
+/* ── liquid aurora background ──
+ * Each blob pre-blurs once into its own compositor layer; the keyframes
+ * below only touch `transform`, so drifting is GPU-composited instead of
+ * re-running a blur filter every frame. */
 .vc-aurora {
   position: fixed;
   inset: 0;
@@ -65,13 +68,55 @@ body {
   pointer-events: none;
   overflow: hidden;
 }
-.vc-aurora-svg {
+.vc-aurora-blob {
   position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
+  width: 56vmax;
+  height: 56vmax;
+  border-radius: 50%;
+  filter: blur(60px);
   mix-blend-mode: screen;
-  opacity: 0.5;
+  opacity: 0.4;
+  will-change: transform;
+  animation: vc-drift ease-in-out infinite;
+}
+.vc-aurora-blob.a {
+  top: -18%;
+  left: -20%;
+  background: radial-gradient(circle, #8b7bff, transparent 70%);
+  animation-duration: 16s;
+}
+.vc-aurora-blob.b {
+  top: -12%;
+  right: -22%;
+  background: radial-gradient(circle, #4fd6e6, transparent 70%);
+  animation-duration: 20s;
+  animation-delay: -5s;
+}
+.vc-aurora-blob.c {
+  bottom: -20%;
+  left: -10%;
+  background: radial-gradient(circle, #ff8bc4, transparent 70%);
+  animation-duration: 18s;
+  animation-delay: -10s;
+}
+.vc-aurora-blob.d {
+  bottom: -24%;
+  right: -18%;
+  background: radial-gradient(circle, #7c5cff, transparent 70%);
+  animation-duration: 19s;
+  animation-delay: -3s;
+}
+@keyframes vc-drift {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  33% {
+    transform: translate3d(6vw, 4vh, 0) scale(1.08);
+  }
+  66% {
+    transform: translate3d(-5vw, 5vh, 0) scale(0.94);
+  }
 }
 
 /* keep content above the aurora */
@@ -1088,10 +1133,6 @@ body {
   align-items: center;
   gap: 12px;
   padding: 14px 16px;
-  animation: vc-wobble 14s ease-in-out infinite;
-}
-.vc-listitem:nth-child(even) {
-  animation-delay: -7s;
 }
 .vc-li-tags {
   display: flex;
@@ -1238,11 +1279,10 @@ body {
   .vc-revbtn,
   .vc-speak,
   .vc-langcard,
-  .vc-listitem,
   .vc-face,
   .vc-empty-mark,
   .vc-hero-num,
-  .vc-aurora-svg circle {
+  .vc-aurora-blob {
     transition: none !important;
     animation: none !important;
   }
