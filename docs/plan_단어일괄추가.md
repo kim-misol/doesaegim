@@ -54,3 +54,13 @@
   - [x] `npm run lint` 클린
   - [ ] 로컬 `npm test`/`npm run build` 확인
   - [x] `docs/MEMORY.md` 기록
+
+### 추가 피드백: 버튼 반응 없음 / Excel 우선
+
+- 요구사항: (1) "파일 올리기" 버튼을 눌러도 반응이 없어 업로드됐는지 헷갈림, (2) 세그 토글에서 Excel이 JSON보다 먼저 오게.
+- 구현: `status`(idle/busy/done) state로 버튼 라벨이 "⬆ 파일 올리기" → "업로드 중…" → "N개 추가 완료 ✓"로 바뀌게 함(`.vc-bk-btn.busy`는 흐리게+클릭 차단, `.vc-bk-btn.done`은 초록 그라디언트). `.vc-bk-btn`에 `:active` 탭 피드백 추가(전역 — BackupBar에도 적용됨). 세그 토글 순서를 Excel, JSON으로 변경하고 기본 포맷도 `xlsx`로.
+- TODO:
+  - [x] 세그 토글 순서 변경 + 기본값 xlsx
+  - [x] 업로드 버튼 상태별 라벨/스타일
+  - [x] `.vc-bk-btn:active` CSS
+  - [x] `npm run lint` 클린

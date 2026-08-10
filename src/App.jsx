@@ -884,8 +884,9 @@ function AddWord({ onSave, words = [], commit, onViewList }) {
 
 function BulkAddBar({ commit, srcLang, tgtLang }) {
   const [open, setOpen] = useState(false);
-  const [format, setFormat] = useState("json");
-  const [msg, setMsg] = useState("");
+  const [format, setFormat] = useState("xlsx");
+  const [status, setStatus] = useState("idle"); // idle | busy | done
+  const [count, setCount] = useState(0);
 
   const downloadTemplate = () => {
     const example = [
@@ -915,6 +916,7 @@ function BulkAddBar({ commit, srcLang, tgtLang }) {
     const file = e.target.files?.[0];
     if (!file) return;
     const isXlsx = /\.xlsx$/i.test(file.name);
+    setStatus("busy");
     const reader = new FileReader();
     reader.onload = () => {
       try {
@@ -922,11 +924,17 @@ function BulkAddBar({ commit, srcLang, tgtLang }) {
           ? wordsFromXLSX(reader.result)
           : wordsFromJSON(String(reader.result));
         commit((prev) => mergeWords(prev, imported));
-        setMsg(`${imported.length}개 단어 추가됐어요`);
-        setTimeout(() => setMsg(""), 2400);
+        setCount(imported.length);
+        setStatus("done");
+        setTimeout(() => setStatus("idle"), 2000);
       } catch (err) {
+        setStatus("idle");
         alert(err.message);
       }
+    };
+    reader.onerror = () => {
+      setStatus("idle");
+      alert("파일을 읽지 못했어요.");
     };
     if (isXlsx) reader.readAsArrayBuffer(file);
     else reader.readAsText(file);
@@ -952,33 +960,40 @@ function BulkAddBar({ commit, srcLang, tgtLang }) {
           </p>
           <div className="vc-seg">
             <button
-              className={format === "json" ? "on" : ""}
-              onClick={() => setFormat("json")}
-            >
-              JSON
-            </button>
-            <button
               className={format === "xlsx" ? "on" : ""}
               onClick={() => setFormat("xlsx")}
             >
               Excel
+            </button>
+            <button
+              className={format === "json" ? "on" : ""}
+              onClick={() => setFormat("json")}
+            >
+              JSON
             </button>
           </div>
           <div className="vc-bk-btns">
             <button className="vc-bk-btn" onClick={downloadTemplate}>
               📄 포맷 파일 받기
             </button>
-            <label className="vc-bk-btn primary">
-              ⬆ 파일 올리기
+            <label
+              className={`vc-bk-btn primary ${status !== "idle" ? status : ""}`}
+              aria-disabled={status === "busy"}
+            >
+              {status === "busy"
+                ? "업로드 중…"
+                : status === "done"
+                  ? `${count}개 추가 완료 ✓`
+                  : "⬆ 파일 올리기"}
               <input
                 type="file"
                 accept=".json,application/json,.xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                 onChange={onFile}
+                disabled={status === "busy"}
                 hidden
               />
             </label>
           </div>
-          {msg && <p className="vc-bk-desc">{msg}</p>}
         </div>
       )}
     </div>

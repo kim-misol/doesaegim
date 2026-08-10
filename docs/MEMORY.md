@@ -7,9 +7,9 @@
 
 ## 2026-08-10 · 포맷 파일 다운로드 + 간격 수정 (PLAN-0007)
 
-- 한 일: (1) `.vc-bk`에 `margin-top: 18px` 추가 — AddWord의 "카드 저장" 버튼과 그 아래 `BulkAddBar`가 붙어 보이던 문제 해결. (2) `BulkAddBar`에 시안 A(design/bulk-add-ui.html) 적용: JSON/Excel 세그 토글 + "포맷 파일 받기"/"파일 올리기" 2버튼. 포맷 파일은 현재 AddWord에서 선택된 srcLang/tgtLang을 채운 예시 1행(word: "example")을 `wordsToJSON`/`wordsToXLSX`로 내보냄(새 lib 로직 없이 재사용). (3) `download` 헬퍼를 `BackupBar` 내부에서 모듈 스코프로 추출해 `BulkAddBar`와 공유.
-- 결정/이유: 사용자가 3개 시안 중 A(나란히 2버튼) 선택.
-- 변경 파일: src/App.jsx, src/styles.css(.vc-bk margin-top, .vc-seg), design/bulk-add-ui.html
+- 한 일: (1) `.vc-bk`에 `margin-top: 18px` 추가 — AddWord의 "카드 저장" 버튼과 그 아래 `BulkAddBar`가 붙어 보이던 문제 해결. (2) `BulkAddBar`에 시안 A(design/bulk-add-ui.html) 적용: JSON/Excel 세그 토글 + "포맷 파일 받기"/"파일 올리기" 2버튼. 포맷 파일은 현재 AddWord에서 선택된 srcLang/tgtLang을 채운 예시 1행(word: "example")을 `wordsToJSON`/`wordsToXLSX`로 내보냄(새 lib 로직 없이 재사용). (3) `download` 헬퍼를 `BackupBar` 내부에서 모듈 스코프로 추출해 `BulkAddBar`와 공유. (4) 후속 피드백 반영: 업로드 버튼이 클릭해도 아무 반응이 없어 헷갈린다는 지적 → `status`(idle/busy/done) 상태로 버튼 텍스트가 "업로드 중…" → "N개 추가 완료 ✓"로 바뀌게 하고, `.vc-bk-btn`에 `:active { transform: scale(0.96) }` 탭 피드백 추가. 세그 토글도 Excel이 먼저 오게 순서 변경(기본값도 xlsx로).
+- 결정/이유: 사용자가 3개 시안 중 A(나란히 2버튼) 선택. Excel을 JSON보다 우선 노출.
+- 변경 파일: src/App.jsx, src/styles.css(.vc-bk margin-top, .vc-seg, .vc-bk-btn active/busy/done), design/bulk-add-ui.html
 - 검증: `npm run lint` 클린. `npm test`/`npm run build`는 이전과 동일한 샌드박스 제약으로 로컬 확인 필요.
 
 ---
