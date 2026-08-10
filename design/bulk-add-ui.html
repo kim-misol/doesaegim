@@ -1,0 +1,469 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>되새김 · 파일로 여러 개 추가 시안</title>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@1.3.9/dist/web/static/pretendard.min.css"
+    />
+    <style>
+      :root {
+        --ink: #f3f5ff;
+        --ink2: rgba(228, 232, 255, 0.62);
+        --line: rgba(255, 255, 255, 0.14);
+        --line2: rgba(255, 255, 255, 0.22);
+        --glass: rgba(255, 255, 255, 0.055);
+        --glass2: rgba(255, 255, 255, 0.1);
+        --v: #8b7bff;
+        --p: #ff8bc4;
+        --a: #a7ff5b;
+        --got: #8fe6b0;
+        --lg:
+          radial-gradient(
+            120% 62% at 30% -12%,
+            rgba(255, 255, 255, 0.16),
+            transparent 55%
+          ),
+          linear-gradient(
+            155deg,
+            rgba(255, 255, 255, 0.12),
+            rgba(255, 255, 255, 0.035)
+          );
+        --lgsh:
+          inset 0 1px 0 rgba(255, 255, 255, 0.5),
+          inset 0 -14px 26px -18px rgba(0, 0, 0, 0.55),
+          0 18px 40px -26px rgba(90, 70, 220, 0.45);
+      }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        font-family: Pretendard, system-ui, sans-serif;
+        color: var(--ink);
+        background: radial-gradient(
+          1100px 700px at 50% -12%,
+          #101427,
+          #05060d 62%
+        );
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+        padding: 44px 18px 70px;
+      }
+      h1 {
+        font-size: 24px;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+      }
+      .lead {
+        color: #8b93b5;
+        font-size: 14px;
+        text-align: center;
+        max-width: 640px;
+        margin-bottom: 14px;
+        line-height: 1.6;
+      }
+      .stage {
+        display: flex;
+        gap: 26px;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-items: flex-start;
+      }
+      .col {
+        width: 340px;
+      }
+      .cap {
+        font-size: 12.5px;
+        color: #9aa0b8;
+        margin: 0 2px 10px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .pick {
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        color: #05060d;
+        background: var(--a);
+        border-radius: 99px;
+        padding: 3px 8px;
+      }
+
+      .frame {
+        border-radius: 26px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        background: #080a12;
+        padding: 18px 16px 20px;
+        box-shadow: 0 30px 70px -34px rgba(90, 70, 220, 0.5);
+      }
+
+      /* faux "add word" context above the panel, so the gap fix (ask #1) is visible */
+      .ctx-label {
+        font-size: 12px;
+        color: var(--ink2);
+        margin: 0 2px 6px;
+      }
+      .ctx-input {
+        border: 1px solid var(--line);
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: 14px;
+        padding: 14px 15px;
+        font-size: 14px;
+        color: var(--ink2);
+        margin-bottom: 14px;
+      }
+      .cta {
+        width: 100%;
+        text-align: center;
+        padding: 15px;
+        border-radius: 16px;
+        font-weight: 700;
+        font-size: 15px;
+        background: linear-gradient(140deg, var(--v), var(--p));
+        color: #fff;
+        box-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, 0.4),
+          0 12px 26px -14px rgba(139, 123, 255, 0.8);
+      }
+
+      /* generic glass card */
+      .card {
+        position: relative;
+        background: var(--lg);
+        border: 1px solid var(--line);
+        border-radius: 20px;
+        box-shadow: var(--lgsh);
+      }
+
+      /* gap marker to visualize ask #1 fix */
+      .gapmark {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin: 18px 0;
+        color: var(--got);
+        font-size: 11px;
+        font-weight: 700;
+      }
+      .gapmark::before,
+      .gapmark::after {
+        content: "";
+        flex: 1;
+        height: 1px;
+        background: repeating-linear-gradient(
+          90deg,
+          rgba(143, 230, 176, 0.5) 0 4px,
+          transparent 4px 8px
+        );
+      }
+
+      .acc {
+        overflow: hidden;
+      }
+      .acc-head {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 13px;
+        border-radius: 999px;
+        border: 1px solid var(--line);
+        background: var(--glass);
+        color: var(--ink2);
+        font-size: 13px;
+        font-weight: 600;
+        margin-bottom: 10px;
+        cursor: pointer;
+      }
+      .acc-head .chev {
+        transform: rotate(90deg);
+        opacity: 0.65;
+      }
+      .acc-body {
+        padding: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      .bk-desc {
+        font-size: 12.5px;
+        color: var(--ink2);
+        line-height: 1.55;
+      }
+      .btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        padding: 13px;
+        border-radius: 14px;
+        font-size: 14px;
+        font-weight: 640;
+        cursor: pointer;
+        border: 1px solid var(--line);
+        background: var(--glass);
+        color: var(--ink);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28);
+      }
+      .btn.primary {
+        background: linear-gradient(140deg, var(--v), var(--p));
+        border: none;
+        color: #fff;
+        box-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, 0.4),
+          0 12px 26px -14px rgba(139, 123, 255, 0.8);
+      }
+      .btn.ghost {
+        background: transparent;
+      }
+
+      /* ── Variant A: two buttons side by side, format as a small segmented toggle ── */
+      .a-row {
+        display: flex;
+        gap: 8px;
+      }
+      .a-row .btn {
+        flex: 1;
+      }
+      .seg {
+        display: flex;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        padding: 3px;
+        gap: 3px;
+        align-self: flex-start;
+      }
+      .seg button {
+        border: none;
+        background: transparent;
+        color: var(--ink2);
+        font-size: 11.5px;
+        font-weight: 700;
+        padding: 5px 12px;
+        border-radius: 999px;
+        cursor: pointer;
+      }
+      .seg button.on {
+        background: linear-gradient(140deg, var(--v), var(--p));
+        color: #fff;
+      }
+
+      /* ── Variant B: 3-step onboarding ── */
+      .steps {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .step {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        padding: 11px 13px;
+        background: var(--glass);
+      }
+      .step-n {
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        background: rgba(139, 123, 255, 0.28);
+        border: 1px solid var(--line2);
+        display: grid;
+        place-items: center;
+        font-size: 11px;
+        font-weight: 800;
+        flex-shrink: 0;
+      }
+      .step-t {
+        flex: 1;
+        font-size: 12.5px;
+        font-weight: 600;
+      }
+      .step-t small {
+        display: block;
+        font-weight: 400;
+        color: var(--ink2);
+        margin-top: 1px;
+      }
+      .step-action {
+        flex-shrink: 0;
+      }
+      .chipbtn {
+        border: 1px solid var(--line);
+        background: var(--glass2);
+        color: var(--ink);
+        font-size: 11.5px;
+        font-weight: 700;
+        padding: 7px 11px;
+        border-radius: 999px;
+        cursor: pointer;
+        white-space: nowrap;
+      }
+      .step.active {
+        border-color: rgba(139, 123, 255, 0.5);
+        background: rgba(139, 123, 255, 0.1);
+      }
+      .step.active .step-n {
+        background: linear-gradient(140deg, var(--v), var(--p));
+      }
+
+      /* ── Variant C: upload-first, template as a quiet link row ── */
+      .c-upload {
+        text-align: center;
+        padding: 15px;
+      }
+      .c-tmpl {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-top: 1px solid var(--line);
+        padding-top: 12px;
+        font-size: 12px;
+        color: var(--ink2);
+      }
+      .c-tmpl .links {
+        display: flex;
+        gap: 14px;
+      }
+      .c-tmpl a {
+        color: var(--ink2);
+        text-decoration: underline;
+        text-underline-offset: 2px;
+        cursor: pointer;
+      }
+      .c-tmpl a:hover {
+        color: var(--ink);
+      }
+    </style>
+  </head>
+  <body>
+    <h1>파일로 여러 개 추가 · 시안</h1>
+    <p class="lead">
+      "카드 저장" 버튼과의 간격은 세 시안 모두에 이미 반영했어요(초록 점선
+      마커). 아래 3가지는 <b>포맷 파일 받기 → 채우기 → 올리기</b> 흐름을 어떻게
+      보여줄지에 대한 안이에요.
+    </p>
+
+    <div class="stage">
+      <!-- Variant A -->
+      <div class="col">
+        <div class="cap">A · 나란히 2버튼 <span class="pick">추천</span></div>
+        <div class="frame">
+          <div class="ctx-label">뜻</div>
+          <div class="ctx-input">한국어 뜻 (직접 입력 가능)</div>
+          <div class="cta">카드 저장</div>
+
+          <div class="gapmark">간격</div>
+
+          <div class="acc open">
+            <div class="acc-head">
+              📥 파일로 여러 개 추가 <span class="chev">›</span>
+            </div>
+            <div class="card acc-body">
+              <p class="bk-desc">
+                포맷 파일을 받아 단어만 채운 뒤 올리면 기존 단어장에 추가돼요.
+              </p>
+              <div class="seg">
+                <button class="on">JSON</button>
+                <button>Excel</button>
+              </div>
+              <div class="a-row">
+                <button class="btn">📄 포맷 파일 받기</button>
+                <button class="btn primary">⬆ 파일 올리기</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Variant B -->
+      <div class="col">
+        <div class="cap">B · 3단계 온보딩형</div>
+        <div class="frame">
+          <div class="ctx-label">뜻</div>
+          <div class="ctx-input">한국어 뜻 (직접 입력 가능)</div>
+          <div class="cta">카드 저장</div>
+
+          <div class="gapmark">간격</div>
+
+          <div class="acc open">
+            <div class="acc-head">
+              📥 파일로 여러 개 추가 <span class="chev">›</span>
+            </div>
+            <div class="card acc-body">
+              <div class="steps">
+                <div class="step active">
+                  <div class="step-n">1</div>
+                  <div class="step-t">
+                    포맷 파일 받기
+                    <small>srcLang · tgtLang · word · meaning 컬럼</small>
+                  </div>
+                  <div class="step-action">
+                    <button class="chipbtn">JSON ⬇</button>
+                  </div>
+                </div>
+                <div class="step">
+                  <div class="step-n">2</div>
+                  <div class="step-t">
+                    단어만 채우기
+                    <small>word, meaning 칸에 추가할 단어 입력</small>
+                  </div>
+                </div>
+                <div class="step">
+                  <div class="step-n">3</div>
+                  <div class="step-t">
+                    파일 올리기
+                    <small>기존 단어장에 자동으로 추가돼요</small>
+                  </div>
+                  <div class="step-action">
+                    <button class="chipbtn">올리기 ⬆</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Variant C -->
+      <div class="col">
+        <div class="cap">C · 업로드 중심, 양식은 조용한 링크</div>
+        <div class="frame">
+          <div class="ctx-label">뜻</div>
+          <div class="ctx-input">한국어 뜻 (직접 입력 가능)</div>
+          <div class="cta">카드 저장</div>
+
+          <div class="gapmark">간격</div>
+
+          <div class="acc open">
+            <div class="acc-head">
+              📥 파일로 여러 개 추가 <span class="chev">›</span>
+            </div>
+            <div class="card acc-body">
+              <p class="bk-desc">
+                word, meaning만 채워도 돼요. 언어를 안 적으면 지금 선택된 언어로
+                들어가요.
+              </p>
+              <button class="btn primary c-upload">⬆ 파일 올리기</button>
+              <div class="c-tmpl">
+                <span>양식이 필요하면</span>
+                <div class="links">
+                  <a>JSON 양식</a>
+                  <a>엑셀 양식</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

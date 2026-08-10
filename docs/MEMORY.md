@@ -5,6 +5,24 @@
 
 ---
 
+## 2026-08-10 · 포맷 파일 다운로드 + 간격 수정 (PLAN-0007)
+
+- 한 일: (1) `.vc-bk`에 `margin-top: 18px` 추가 — AddWord의 "카드 저장" 버튼과 그 아래 `BulkAddBar`가 붙어 보이던 문제 해결. (2) `BulkAddBar`에 시안 A(design/bulk-add-ui.html) 적용: JSON/Excel 세그 토글 + "포맷 파일 받기"/"파일 올리기" 2버튼. 포맷 파일은 현재 AddWord에서 선택된 srcLang/tgtLang을 채운 예시 1행(word: "example")을 `wordsToJSON`/`wordsToXLSX`로 내보냄(새 lib 로직 없이 재사용). (3) `download` 헬퍼를 `BackupBar` 내부에서 모듈 스코프로 추출해 `BulkAddBar`와 공유.
+- 결정/이유: 사용자가 3개 시안 중 A(나란히 2버튼) 선택.
+- 변경 파일: src/App.jsx, src/styles.css(.vc-bk margin-top, .vc-seg), design/bulk-add-ui.html
+- 검증: `npm run lint` 클린. `npm test`/`npm run build`는 이전과 동일한 샌드박스 제약으로 로컬 확인 필요.
+
+---
+
+## 2026-08-10 · 단어 추가 화면에 파일 일괄 추가 (PLAN-0006)
+
+- 한 일: `AddWord` 화면에 `BulkAddBar` 추가. srcLang/tgtLang/word/meaning 컬럼의 JSON 또는 xlsx 파일을 올리면 기존 단어장에 추가됨. 새 lib 로직 없이 기존 `backup.js`의 `wordsFromJSON`/`wordsFromXLSX`/`mergeWords`를 그대로 재사용(이미 부분 필드 자동완성 + id 없는 항목은 항상 "추가"로 동작).
+- 결정/이유: BackupBar의 "불러오기"와 완전히 같은 파싱 로직이라 lib 변경 불필요. 위치는 사용자가 "단어 추가(AddWord) 화면"을 선택.
+- 변경 파일: src/App.jsx(AddWord에 commit prop 전달, BulkAddBar 컴포넌트 추가), docs/plan_단어일괄추가.md
+- 검증: `npm run lint` 클린. `npm test`/`npm run build`는 이 샌드박스 환경 제약(PLAN-0005 참고: node_modules 아키텍처 불일치)으로 미실행 — 로컬 확인 필요.
+
+---
+
 ## 2026-08-10 · 백업/복원 엑셀(.xlsx) 지원 (PLAN-0005)
 
 - 한 일: `backup.js`에 `wordsToXLSX`/`wordsFromXLSX` 추가(SheetJS `xlsx` 사용), CSV의 header→row 매핑 로직을 `rowsToWords`로 공유 추출. `App.jsx` BackupBar에 "엑셀(.xlsx)로 백업" 버튼 추가, 불러오기 input이 `.xlsx`/`.json` 확장자로 분기.

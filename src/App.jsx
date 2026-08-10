@@ -207,6 +207,16 @@ function AuroraBg() {
 
 /* ───────────────────────── app ───────────────────────── */
 
+// Shared by BackupBar and BulkAddBar to trigger a file download.
+function download(name, data, type) {
+  const url = URL.createObjectURL(new Blob([data], { type }));
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = name;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 export default function App() {
   const [words, setWords] = useState([]);
   const [ready, setReady] = useState(false);
@@ -389,6 +399,7 @@ export default function App() {
           <AddWord
             onSave={(w) => commit((prev) => [w, ...prev])}
             words={words}
+            commit={commit}
             onViewList={() => setTab("list")}
           />
         ) : (
@@ -716,7 +727,7 @@ function Face({ side, text, lang, hint, accent }) {
 
 /* ───────────────────────── add word ───────────────────────── */
 
-function AddWord({ onSave, words = [], onViewList }) {
+function AddWord({ onSave, words = [], commit, onViewList }) {
   const [srcLang, setSrcLang] = useState("en");
   const [tgtLang, setTgtLang] = useState("ko");
   const [word, setWord] = useState("");
@@ -863,6 +874,113 @@ function AddWord({ onSave, words = [], onViewList }) {
             ? "이미 저장된 단어예요"
             : "카드 저장"}
       </button>
+
+      <BulkAddBar commit={commit} srcLang={srcLang} tgtLang={tgtLang} />
+    </div>
+  );
+}
+
+/* ───────────────── bulk add (JSON/XLSX file → add to list) ───────────────── */
+
+function BulkAddBar({ commit, srcLang, tgtLang }) {
+  const [open, setOpen] = useState(false);
+  const [format, setFormat] = useState("json");
+  const [msg, setMsg] = useState("");
+
+  const downloadTemplate = () => {
+    const example = [
+      {
+        srcLang,
+        tgtLang,
+        word: "example",
+        meaning: "예시 (이 줄은 지우고 단어를 채워주세요)",
+      },
+    ];
+    if (format === "xlsx") {
+      download(
+        "doesaegim-format.xlsx",
+        wordsToXLSX(example),
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      );
+    } else {
+      download(
+        "doesaegim-format.json",
+        wordsToJSON(example),
+        "application/json",
+      );
+    }
+  };
+
+  const onFile = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const isXlsx = /\.xlsx$/i.test(file.name);
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const imported = isXlsx
+          ? wordsFromXLSX(reader.result)
+          : wordsFromJSON(String(reader.result));
+        commit((prev) => mergeWords(prev, imported));
+        setMsg(`${imported.length}개 단어 추가됐어요`);
+        setTimeout(() => setMsg(""), 2400);
+      } catch (err) {
+        alert(err.message);
+      }
+    };
+    if (isXlsx) reader.readAsArrayBuffer(file);
+    else reader.readAsText(file);
+    e.target.value = "";
+  };
+
+  return (
+    <div className={`vc-bk ${open ? "open" : ""}`}>
+      <button
+        className="vc-bk-head"
+        onClick={() => setOpen((o) => !o)}
+        aria-expanded={open}
+      >
+        <span className="vc-bk-ic">📥</span>
+        <span className="vc-bk-title">파일로 여러 개 추가</span>
+        <span className="vc-bk-chev">›</span>
+      </button>
+
+      {open && (
+        <div className="vc-bk-body">
+          <p className="vc-bk-desc">
+            포맷 파일을 받아 단어만 채운 뒤 올리면 기존 단어장에 추가돼요.
+          </p>
+          <div className="vc-seg">
+            <button
+              className={format === "json" ? "on" : ""}
+              onClick={() => setFormat("json")}
+            >
+              JSON
+            </button>
+            <button
+              className={format === "xlsx" ? "on" : ""}
+              onClick={() => setFormat("xlsx")}
+            >
+              Excel
+            </button>
+          </div>
+          <div className="vc-bk-btns">
+            <button className="vc-bk-btn" onClick={downloadTemplate}>
+              📄 포맷 파일 받기
+            </button>
+            <label className="vc-bk-btn primary">
+              ⬆ 파일 올리기
+              <input
+                type="file"
+                accept=".json,application/json,.xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                onChange={onFile}
+                hidden
+              />
+            </label>
+          </div>
+          {msg && <p className="vc-bk-desc">{msg}</p>}
+        </div>
+      )}
     </div>
   );
 }
@@ -1100,14 +1218,6 @@ function AccountBar({ user }) {
 
 function BackupBar({ words, commit }) {
   const [open, setOpen] = useState(false);
-  const download = (name, text, type) => {
-    const url = URL.createObjectURL(new Blob([text], { type }));
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = name;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
 
   const onImport = (e) => {
     const file = e.target.files?.[0];

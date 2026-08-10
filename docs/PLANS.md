@@ -4,6 +4,33 @@
 
 ---
 
+## PLAN-0007 · 간격 수정 + 포맷 파일 다운로드 (PLAN-0006 후속)
+
+- 날짜: 2026-08-10
+- 상태: 구현 완료, lint 클린 / test·build 로컬 확인 필요
+- 목표: 카드 저장 버튼과 BulkAddBar 간격 정리 + 포맷 파일(json/엑셀)을 받아 단어만 채워 올리는 흐름.
+- 인수 조건:
+  - [x] `.vc-bk` 간격 수정
+  - [x] 시안 3개(design/bulk-add-ui.html) 중 A안으로 포맷 다운로드 + 업로드 UI 구현
+- 건드린 파일: src/App.jsx, src/styles.css, design/bulk-add-ui.html
+- 비고: 상세는 docs/plan_단어일괄추가.md의 "추가 반영" 참고.
+
+---
+
+## PLAN-0006 · 단어 추가 화면 파일 일괄 추가
+
+- 날짜: 2026-08-10
+- 상태: 구현 완료, lint 클린 / test·build 로컬 확인 필요
+- 목표: srcLang/tgtLang/word/meaning 컬럼의 JSON·xlsx 파일을 올리면 단어 추가 화면에서 바로 기존 단어장에 추가.
+- 인수 조건:
+  - [x] AddWord 화면에 `BulkAddBar`(파일 선택 → 추가)
+  - [x] JSON/xlsx 자동 판별, 기존 backup.js 함수 재사용(새 lib 로직 없음)
+  - [ ] 로컬 `npm test`/`npm run build` 확인
+- 건드린 파일: src/App.jsx
+- 비고: 상세는 docs/plan_단어일괄추가.md.
+
+---
+
 ## PLAN-0005 · 백업/복원 엑셀(.xlsx) 지원
 
 - 날짜: 2026-08-10
