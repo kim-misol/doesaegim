@@ -4,6 +4,8 @@ import {
   wordsFromJSON,
   wordsToCSV,
   wordsFromCSV,
+  wordsToXLSX,
+  wordsFromXLSX,
   mergeWords,
 } from "../backup.js";
 
@@ -64,6 +66,22 @@ describe("CSV backup", () => {
 
   it("preserves srs fields", () => {
     const restored = wordsFromCSV(wordsToCSV(words));
+    expect(restored[0].box).toBe(2);
+    expect(restored[0].due).toBe(1700000000000);
+  });
+});
+
+describe("XLSX backup", () => {
+  it("round-trips including commas and quotes", () => {
+    const restored = wordsFromXLSX(wordsToXLSX(words));
+    expect(restored.map((w) => [w.word, w.meaning])).toEqual([
+      ["apple", "사과"],
+      ["chat, noir", '고양이 "검은"'],
+    ]);
+  });
+
+  it("preserves srs fields", () => {
+    const restored = wordsFromXLSX(wordsToXLSX(words));
     expect(restored[0].box).toBe(2);
     expect(restored[0].due).toBe(1700000000000);
   });

@@ -57,10 +57,7 @@ body {
   overflow-x: hidden;
 }
 
-/* ── liquid aurora background ──
- * Each blob pre-blurs once into its own compositor layer; the keyframes
- * below only touch `transform`, so drifting is GPU-composited instead of
- * re-running a blur filter every frame. */
+/* ── liquid aurora background ── */
 .vc-aurora {
   position: fixed;
   inset: 0;
@@ -68,55 +65,13 @@ body {
   pointer-events: none;
   overflow: hidden;
 }
-.vc-aurora-blob {
+.vc-aurora-svg {
   position: absolute;
-  width: 56vmax;
-  height: 56vmax;
-  border-radius: 50%;
-  filter: blur(60px);
+  inset: 0;
+  width: 100%;
+  height: 100%;
   mix-blend-mode: screen;
-  opacity: 0.4;
-  will-change: transform;
-  animation: vc-drift ease-in-out infinite;
-}
-.vc-aurora-blob.a {
-  top: -18%;
-  left: -20%;
-  background: radial-gradient(circle, #8b7bff, transparent 70%);
-  animation-duration: 16s;
-}
-.vc-aurora-blob.b {
-  top: -12%;
-  right: -22%;
-  background: radial-gradient(circle, #4fd6e6, transparent 70%);
-  animation-duration: 20s;
-  animation-delay: -5s;
-}
-.vc-aurora-blob.c {
-  bottom: -20%;
-  left: -10%;
-  background: radial-gradient(circle, #ff8bc4, transparent 70%);
-  animation-duration: 18s;
-  animation-delay: -10s;
-}
-.vc-aurora-blob.d {
-  bottom: -24%;
-  right: -18%;
-  background: radial-gradient(circle, #7c5cff, transparent 70%);
-  animation-duration: 19s;
-  animation-delay: -3s;
-}
-@keyframes vc-drift {
-  0%,
-  100% {
-    transform: translate3d(0, 0, 0) scale(1);
-  }
-  33% {
-    transform: translate3d(6vw, 4vh, 0) scale(1.08);
-  }
-  66% {
-    transform: translate3d(-5vw, 5vh, 0) scale(0.94);
-  }
+  opacity: 0.5;
 }
 
 /* keep content above the aurora */
@@ -1282,7 +1237,7 @@ body {
   .vc-face,
   .vc-empty-mark,
   .vc-hero-num,
-  .vc-aurora-blob {
+  .vc-aurora-svg circle {
     transition: none !important;
     animation: none !important;
   }

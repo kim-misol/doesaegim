@@ -4,6 +4,20 @@
 
 ---
 
+## PLAN-0005 · 백업/복원 엑셀(.xlsx) 지원
+
+- 날짜: 2026-08-10
+- 상태: 구현 완료 / 로컬 테스트·빌드 확인 필요 (샌드박스 환경 제약, 상세는 docs/plan_엑셀백업.md)
+- 목표: JSON뿐 아니라 실제 .xlsx 파일로도 백업 내보내기·불러오기가 가능하게 한다.
+- 인수 조건:
+  - [x] `wordsToXLSX`/`wordsFromXLSX` (SheetJS `xlsx`) + 라운드트립 테스트
+  - [x] BackupBar에 엑셀 백업 버튼, 불러오기가 `.xlsx`/`.json` 확장자 분기
+  - [ ] 로컬 `npm install` + `npm test`/`npm run build` 통과 (사용자 확인)
+- 건드린 파일: package.json, src/lib/backup.js, src/lib/**tests**/backup.test.js, src/App.jsx
+- 비고: 상세 설계·TODO는 `docs/plan_엑셀백업.md` 참고.
+
+---
+
 ## PLAN-0004 · 클라우드 동기화 + 번역 프록시 + 백업 (실사용화)
 
 - 날짜: 2026-07-24

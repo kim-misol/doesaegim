@@ -1,0 +1,608 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>되새김 · 성능 최적화 전후 비교</title>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@1.3.9/dist/web/static/pretendard.min.css"
+    />
+    <style>
+      :root {
+        --ink: #f3f5ff;
+        --ink2: rgba(228, 232, 255, 0.62);
+        --line: rgba(255, 255, 255, 0.14);
+        --line2: rgba(255, 255, 255, 0.22);
+        --v: #8b7bff;
+        --c: #4fd6e6;
+        --p: #ff8bc4;
+        --a: #a7ff5b;
+        --got: #8fe6b0;
+        --lgsh:
+          inset 0 1px 0 rgba(255, 255, 255, 0.5),
+          inset 0 -14px 26px -18px rgba(0, 0, 0, 0.55),
+          0 18px 40px -26px rgba(90, 70, 220, 0.45);
+      }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        font-family: Pretendard, system-ui, sans-serif;
+        color: var(--ink);
+        background: radial-gradient(
+          1200px 800px at 50% -10%,
+          #0e1120,
+          #04050a 60%
+        );
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+        padding: 44px 18px 70px;
+      }
+      h1 {
+        font-size: 24px;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+      }
+      .lead {
+        color: #8b93b5;
+        font-size: 14px;
+        text-align: center;
+        max-width: 680px;
+        margin-bottom: 20px;
+        line-height: 1.6;
+      }
+      .stage {
+        display: flex;
+        gap: 40px;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-items: flex-start;
+      }
+      .cap {
+        text-align: center;
+        margin-bottom: 14px;
+      }
+      .cap b {
+        font-size: 15px;
+        font-weight: 800;
+      }
+      .cap .tagline {
+        font-size: 12px;
+        color: #9aa0b8;
+        margin-top: 3px;
+      }
+      .cap .badge {
+        display: inline-block;
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 0.06em;
+        border-radius: 99px;
+        padding: 3px 9px;
+        margin-top: 8px;
+      }
+      .badge.heavy {
+        background: rgba(255, 120, 120, 0.16);
+        color: #ff9d9d;
+        border: 1px solid rgba(255, 120, 120, 0.3);
+      }
+      .badge.light {
+        background: rgba(143, 230, 176, 0.16);
+        color: var(--got);
+        border: 1px solid rgba(143, 230, 176, 0.3);
+      }
+
+      /* phone */
+      .phone {
+        width: 330px;
+        height: 640px;
+        border-radius: 44px;
+        position: relative;
+        overflow: hidden;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        box-shadow: 0 40px 90px -30px rgba(90, 70, 220, 0.5);
+      }
+      .screen {
+        position: relative;
+        height: 100%;
+        padding: 24px 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        z-index: 2;
+      }
+      .wm {
+        font-weight: 800;
+        font-size: 19px;
+        text-align: center;
+        margin-bottom: 2px;
+      }
+
+      /* annotation chip on elements */
+      .ann {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        z-index: 5;
+        font-size: 9px;
+        font-weight: 700;
+        border-radius: 6px;
+        padding: 2px 6px;
+      }
+      .ann.h {
+        background: rgba(255, 120, 120, 0.9);
+        color: #2a0d0d;
+      }
+      .ann.l {
+        background: rgba(143, 230, 176, 0.92);
+        color: #0a2016;
+      }
+
+      /* ===== HEAVY (current) ===== */
+      .heavy .bg {
+        position: absolute;
+        inset: 0;
+        overflow: hidden;
+        z-index: 0;
+        background: #080a12;
+      }
+      .heavy .blob {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(42px);
+        mix-blend-mode: screen;
+        opacity: 0.6;
+      }
+      .heavy .b1 {
+        width: 220px;
+        height: 220px;
+        background: var(--v);
+        left: -30px;
+        top: -20px;
+        animation: float1 9s ease-in-out infinite;
+      }
+      .heavy .b2 {
+        width: 200px;
+        height: 200px;
+        background: var(--c);
+        right: -30px;
+        top: 30px;
+        animation: float2 11s ease-in-out infinite;
+      }
+      .heavy .b3 {
+        width: 180px;
+        height: 180px;
+        background: var(--p);
+        left: 80px;
+        top: 150px;
+        animation: float1 13s ease-in-out infinite reverse;
+      }
+      @keyframes float1 {
+        0%,
+        100% {
+          transform: translate(0, 0);
+        }
+        50% {
+          transform: translate(30px, 26px);
+        }
+      }
+      @keyframes float2 {
+        0%,
+        100% {
+          transform: translate(0, 0);
+        }
+        50% {
+          transform: translate(-26px, 32px);
+        }
+      }
+      .heavy .glass {
+        position: relative;
+        border: 1px solid var(--line);
+        border-radius: 22px;
+        background: linear-gradient(
+          155deg,
+          rgba(255, 255, 255, 0.12),
+          rgba(255, 255, 255, 0.035)
+        );
+        backdrop-filter: blur(18px) saturate(1.5);
+        -webkit-backdrop-filter: blur(18px) saturate(1.5);
+        box-shadow: var(--lgsh);
+      }
+      .heavy .card {
+        animation: wob 9s ease-in-out infinite;
+      }
+      .heavy .card:nth-child(2) {
+        animation-delay: -3s;
+      }
+      .heavy .card:nth-child(3) {
+        animation-delay: -6s;
+      }
+      @keyframes wob {
+        0%,
+        100% {
+          border-radius: 22px;
+        }
+        33% {
+          border-radius: 26px 20px 24px 20px;
+        }
+        66% {
+          border-radius: 20px 26px 20px 26px;
+        }
+      }
+      .heavy .num {
+        animation: shim 6s linear infinite;
+        background: linear-gradient(90deg, #fff, #c9d0ff, #fff);
+        background-size: 200% 100%;
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+      @keyframes shim {
+        to {
+          background-position: 200% 0;
+        }
+      }
+
+      /* ===== LIGHT (optimized) ===== */
+      .light .bg {
+        position: absolute;
+        inset: 0;
+        z-index: 0;
+        background:
+          radial-gradient(
+            280px 220px at 22% 8%,
+            rgba(139, 123, 255, 0.34),
+            transparent 70%
+          ),
+          radial-gradient(
+            240px 200px at 86% 20%,
+            rgba(79, 214, 230, 0.24),
+            transparent 70%
+          ),
+          radial-gradient(
+            240px 220px at 50% 62%,
+            rgba(255, 139, 196, 0.22),
+            transparent 70%
+          ),
+          #080a12;
+      }
+      .light .glass {
+        position: relative;
+        border: 1px solid var(--line);
+        border-radius: 22px;
+        background: linear-gradient(
+          155deg,
+          rgba(30, 32, 52, 0.72),
+          rgba(20, 22, 38, 0.6)
+        );
+        box-shadow: var(--lgsh);
+      }
+      .light .num {
+        background: linear-gradient(90deg, #fff, #c9d0ff);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+
+      /* shared inner layout */
+      .hero {
+        padding: 20px 22px;
+      }
+      .hero .lbl {
+        font-size: 12px;
+        color: var(--ink2);
+      }
+      .hero .num {
+        font-size: 56px;
+        font-weight: 800;
+        line-height: 1;
+        letter-spacing: -0.04em;
+        margin: 4px 0 2px;
+      }
+      .hero .sub {
+        font-size: 12px;
+        color: var(--ink2);
+      }
+      .hero .ring {
+        position: absolute;
+        right: 20px;
+        top: 20px;
+        width: 58px;
+        height: 58px;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        background: conic-gradient(
+          from -90deg,
+          var(--a) 42%,
+          rgba(255, 255, 255, 0.12) 0
+        );
+      }
+      .hero .ring i {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background: #0b0d18;
+        display: grid;
+        place-items: center;
+        font-size: 12px;
+        font-weight: 700;
+        font-style: normal;
+      }
+      .seclbl {
+        font-size: 11px;
+        color: var(--ink2);
+        margin: 4px 4px -4px;
+      }
+      .card {
+        display: grid;
+        grid-template-columns: auto auto 1fr auto;
+        align-items: center;
+        gap: 10px;
+        padding: 14px;
+      }
+      .grip {
+        color: var(--ink2);
+        font-size: 15px;
+      }
+      .ltag {
+        font-family: ui-monospace, Menlo, monospace;
+        font-size: 12px;
+        font-weight: 700;
+        width: 34px;
+        height: 34px;
+        display: grid;
+        place-items: center;
+        border: 1px solid var(--line2);
+        border-radius: 11px;
+      }
+      .nm {
+        font-size: 15px;
+        font-weight: 600;
+      }
+      .pill {
+        font-size: 11px;
+        font-weight: 600;
+        padding: 5px 11px;
+        border-radius: 99px;
+        background: rgba(143, 230, 176, 0.15);
+        color: var(--got);
+        border: 1px solid rgba(143, 230, 176, 0.28);
+      }
+      .cards {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>성능 최적화 — 디자인 변화 비교</h1>
+    <p class="lead">
+      최적화해도 <b>무드는 거의 그대로</b>예요. 왼쪽(현재)은 SVG 필터·백드롭
+      블러·상시 애니메이션이 무겁고, 오른쪽(최적화)은 같은 룩을 더 싼 방법으로
+      냅니다. 빨간 태그 = 무거운 효과, 초록 태그 = 대체 방식.
+    </p>
+
+    <div class="stage">
+      <!-- HEAVY -->
+      <div>
+        <div class="cap">
+          <b>현재 (무거움)</b>
+          <div class="tagline">SVG goo 필터 · backdrop-filter · wobble</div>
+          <span class="badge heavy">렉 유발</span>
+        </div>
+        <div class="phone heavy">
+          <div class="bg">
+            <div class="blob b1"></div>
+            <div class="blob b2"></div>
+            <div class="blob b3"></div>
+          </div>
+          <div class="screen">
+            <div class="wm">되새김</div>
+            <div class="glass hero">
+              <span class="ann h">backdrop blur</span>
+              <div class="ring"><i>42%</i></div>
+              <div class="lbl">오늘 복습</div>
+              <div class="num">7</div>
+              <div class="sub">5장 완료 · 7장 남음</div>
+            </div>
+            <div class="seclbl">언어별 복습</div>
+            <div class="cards">
+              <div class="glass card">
+                <span class="ann h">wobble+blur</span><span class="grip">⠿</span
+                ><span class="ltag" style="color: #e8a99e">ES</span
+                ><span class="nm">Español</span><span class="pill">5 복습</span>
+              </div>
+              <div class="glass card">
+                <span class="grip">⠿</span
+                ><span class="ltag" style="color: #9ec1e8">EN</span
+                ><span class="nm">English</span><span class="pill">4 복습</span>
+              </div>
+              <div class="glass card">
+                <span class="grip">⠿</span
+                ><span class="ltag" style="color: #9ee8ae">IT</span
+                ><span class="nm">Italiano</span
+                ><span class="pill">3 복습</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- LIGHT -->
+      <div>
+        <div class="cap">
+          <b>최적화 (가벼움)</b>
+          <div class="tagline">
+            정적 그라디언트 · 반투명 단색 · 애니메이션 정리
+          </div>
+          <span class="badge light">부드러움</span>
+        </div>
+        <div class="phone light">
+          <div class="bg"></div>
+          <div class="screen">
+            <div class="wm">되새김</div>
+            <div class="glass hero">
+              <span class="ann l">blur 제거</span>
+              <div class="ring"><i>42%</i></div>
+              <div class="lbl">오늘 복습</div>
+              <div class="num">7</div>
+              <div class="sub">5장 완료 · 7장 남음</div>
+            </div>
+            <div class="seclbl">언어별 복습</div>
+            <div class="cards">
+              <div class="glass card">
+                <span class="ann l">정적·blur 제거</span
+                ><span class="grip">⠿</span
+                ><span class="ltag" style="color: #e8a99e">ES</span
+                ><span class="nm">Español</span><span class="pill">5 복습</span>
+              </div>
+              <div class="glass card">
+                <span class="grip">⠿</span
+                ><span class="ltag" style="color: #9ec1e8">EN</span
+                ><span class="nm">English</span><span class="pill">4 복습</span>
+              </div>
+              <div class="glass card">
+                <span class="grip">⠿</span
+                ><span class="ltag" style="color: #9ee8ae">IT</span
+                ><span class="nm">Italiano</span
+                ><span class="pill">3 복습</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="max-width: 720px; margin-top: 34px; width: 100%">
+      <table style="width: 100%; border-collapse: collapse; font-size: 13.5px">
+        <thead>
+          <tr style="color: #9aa0b8; text-align: left">
+            <th style="padding: 10px; border-bottom: 1px solid var(--line)">
+              항목
+            </th>
+            <th style="padding: 10px; border-bottom: 1px solid var(--line)">
+              현재
+            </th>
+            <th style="padding: 10px; border-bottom: 1px solid var(--line)">
+              최적화
+            </th>
+            <th style="padding: 10px; border-bottom: 1px solid var(--line)">
+              보이는 차이
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="padding: 10px; border-bottom: 1px solid var(--line)">
+              배경 오로라
+            </td>
+            <td
+              style="
+                padding: 10px;
+                border-bottom: 1px solid var(--line);
+                color: #ff9d9d;
+              "
+            >
+              SVG goo 필터 + 무한 애니
+            </td>
+            <td
+              style="
+                padding: 10px;
+                border-bottom: 1px solid var(--line);
+                color: var(--got);
+              "
+            >
+              정적 소프트 그라디언트
+            </td>
+            <td
+              style="
+                padding: 10px;
+                border-bottom: 1px solid var(--line);
+                color: var(--ink2);
+              "
+            >
+              거의 없음 (은은한 발광 유지)
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 10px; border-bottom: 1px solid var(--line)">
+              유리 패널
+            </td>
+            <td
+              style="
+                padding: 10px;
+                border-bottom: 1px solid var(--line);
+                color: #ff9d9d;
+              "
+            >
+              backdrop-filter blur ×다수
+            </td>
+            <td
+              style="
+                padding: 10px;
+                border-bottom: 1px solid var(--line);
+                color: var(--got);
+              "
+            >
+              반투명 단색(부드러운 배경 위)
+            </td>
+            <td
+              style="
+                padding: 10px;
+                border-bottom: 1px solid var(--line);
+                color: var(--ink2);
+              "
+            >
+              거의 없음
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 10px; border-bottom: 1px solid var(--line)">
+              카드 애니
+            </td>
+            <td
+              style="
+                padding: 10px;
+                border-bottom: 1px solid var(--line);
+                color: #ff9d9d;
+              "
+            >
+              wobble(모서리 변형) 상시
+            </td>
+            <td
+              style="
+                padding: 10px;
+                border-bottom: 1px solid var(--line);
+                color: var(--got);
+              "
+            >
+              정지
+            </td>
+            <td
+              style="
+                padding: 10px;
+                border-bottom: 1px solid var(--line);
+                color: var(--ink2);
+              "
+            >
+              없음
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 10px">긴 목록</td>
+            <td style="padding: 10px; color: #ff9d9d">전부 렌더</td>
+            <td style="padding: 10px; color: var(--got)">content-visibility</td>
+            <td style="padding: 10px; color: var(--ink2)">없음(성능만)</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </body>
+</html>

@@ -5,15 +5,25 @@
 
 ---
 
+## 2026-08-10 · 백업/복원 엑셀(.xlsx) 지원 (PLAN-0005)
+
+- 한 일: `backup.js`에 `wordsToXLSX`/`wordsFromXLSX` 추가(SheetJS `xlsx` 사용), CSV의 header→row 매핑 로직을 `rowsToWords`로 공유 추출. `App.jsx` BackupBar에 "엑셀(.xlsx)로 백업" 버튼 추가, 불러오기 input이 `.xlsx`/`.json` 확장자로 분기.
+- 결정/이유: 사용자가 xlsx npm 의존성 설치를 승인했으나, 이 작업환경은 npm 레지스트리·CDN이 전부 allowlist로 차단돼 있어 설치 불가 확인 → `package.json`에만 `"xlsx": "^0.18.5"` 추가하고 실제 설치는 사용자가 로컬에서 진행하기로 함.
+- 검증 한계: 이 환경의 `node_modules`가 macOS(darwin-arm64)용으로 설치돼 있어(Linux 샌드박스와 아키텍처 불일치) `vitest`가 아예 기동 불가(rollup 네이티브 바이너리 누락, 이 기능과 무관한 기존 환경 문제) → `npm test`/`npm run build` 미실행. `npm run lint`만 클린 확인.
+- 변경 파일: package.json, src/lib/backup.js, src/lib/**tests**/backup.test.js, src/App.jsx, docs/plan_엑셀백업.md
+- 후속 작업: 사용자가 로컬에서 `npm install` 후 `npm test`(xlsx 라운드트립 2케이스 포함) · `npm run build` 확인 필요.
+
+---
+
 ## 2026-07-25 · 렌더링 성능 최적화 (아우로라·리스트 애니메이션·리렌더)
 
 - 증상: "속도가 너무 느려" — 코드 리딩으로 원인 특정(프로파일러 없이 정적 분석).
 - 원인 1(가장 큼): `AuroraBg`가 SVG `feGaussianBlur`+`feColorMatrix`+`feBlend` 필터를 4개 도형에 SMIL `<animate>`로 무한 반복 적용 — 모든 화면에서 매 프레임 블러를 재계산(합성 불가, CPU/GPU 부담 큼, 특히 모바일 Safari).
 - 원인 2: `.vc-listitem`(단어 목록의 각 행)에 `vc-wobble`(border-radius 애니메이션, 합성 불가·페인트 유발) 무한 반복 — 단어 개수만큼 O(n)으로 상시 리페인트, 목록이 길수록 악화.
 - 원인 3: `Today`의 언어 순서(`ord`)를 `useEffect`로 prop과 동기화하던 패턴이 매 순서 변경마다 이중 렌더(커밋 후 effect→재커밋) 유발 — eslint `react-hooks/set-state-in-effect`가 실제로 잡아냄.
-- 한 일: (1) `AuroraBg`를 SVG 필터→도형별 독립 `filter: blur()` + `transform`만 애니메이션하는 CSS 블롭 4개로 교체(블러는 컴포지터 레이어에 1회만 래스터라이즈, drift는 GPU 트랜스폼). (2) `.vc-listitem`의 `vc-wobble` 애니메이션 제거(정적 `border-radius`는 `.vc-glass`가 계속 제공). (3) `Today`의 order 동기화를 렌더 중 조건부 setState로 변경(react.dev "adjusting state when a prop changes" 패턴), ref 동기화만 별도 effect로 분리.
-- 결정/이유: 시각 디자인(Aurora Glass 룩)은 그대로 유지 — backdrop-filter 반경/투명도 등은 건드리지 않음. 순수하게 "매 프레임 반복되는 비용"만 제거.
-- 변경 파일: src/App.jsx(AuroraBg, Today order sync), src/styles.css(.vc-aurora*, .vc-listitem, reduced-motion 셀렉터). 테스트 92개 그린, lint/format 클린, 빌드 OK(JS 172.97→171.31kB, 실질 동일).
+- 한 일: (1) `AuroraBg`를 SVG 필터→CSS 블롭(filter:blur+transform)로 교체했다가, **사용자 요청으로 원래 SVG goo 버전으로 롤백**(아우로라는 시각적으로 그대로 유지하고 싶다는 피드백 — 성능보다 룩 우선). 원인 1(아우로라)은 그대로 남아 있음, 필요하면 재시도. (2) `.vc-listitem`의 `vc-wobble` 애니메이션 제거(정적 `border-radius`는 `.vc-glass`가 계속 제공) — 유지. (3) `Today`의 order 동기화를 렌더 중 조건부 setState로 변경(react.dev "adjusting state when a prop changes" 패턴), ref 동기화만 별도 effect로 분리 — 유지.
+- 결정/이유: 아우로라 배경의 시각적 디테일(SVG goo 블렌드로 도형끼리 녹아드는 느낌)은 CSS 블롭 버전으로는 완전히 재현이 안 돼서 사용자가 원본 유지를 선택. 나머지 두 개(리스트 페인트, 이중 렌더)는 시각적 차이가 없어 그대로 적용.
+- 변경 파일: src/App.jsx(Today order sync만 최종 반영, AuroraBg는 원복), src/styles.css(.vc-listitem, reduced-motion 셀렉터만 최종 반영, .vc-aurora*는 원복). 테스트 92개 그린, lint/format 클린, 빌드 OK.
 - 후속(미착수, 범위 밖이라 보류): 로그인 시 `getSupabase()`를 두 effect가 동시 호출하면 경합으로 한쪽이 null을 받아 KV 백엔드가 로컬로 폴백하는 레이스 발견 — in-flight 프라미스 공유로 고치면 됨. 클라우드 데이터 로딩(단어/통계/순서)도 여전히 로그인 후 여러 번의 순차 네트워크 왕복이라 초기 "불러오는 중" 체감 지연의 원인일 수 있음.
 
 ---

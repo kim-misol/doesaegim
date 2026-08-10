@@ -1,0 +1,465 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>되새김 · 실측 성능 벤치마크</title>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@1.3.9/dist/web/static/pretendard.min.css"
+    />
+    <style>
+      :root {
+        --ink: #f3f5ff;
+        --ink2: rgba(228, 232, 255, 0.62);
+        --line: rgba(255, 255, 255, 0.14);
+        --v: #8b7bff;
+        --p: #ff8bc4;
+        --good: #8fe6b0;
+        --bad: #ff9e9e;
+        --lg-bg:
+          radial-gradient(
+            120% 62% at 30% -12%,
+            rgba(255, 255, 255, 0.16),
+            transparent 55%
+          ),
+          linear-gradient(
+            155deg,
+            rgba(255, 255, 255, 0.12),
+            rgba(255, 255, 255, 0.035)
+          );
+        --lg-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, 0.5),
+          inset 0 -14px 26px -18px rgba(0, 0, 0, 0.55),
+          0 18px 40px -26px rgba(90, 70, 220, 0.45);
+      }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        font-family: Pretendard, system-ui, sans-serif;
+        color: var(--ink);
+        background: radial-gradient(
+          1200px 800px at 50% -10%,
+          #0e1120,
+          #04050a 60%
+        );
+        min-height: 100vh;
+        padding: 28px 16px 80px;
+        max-width: 640px;
+        margin: 0 auto;
+      }
+      h1 {
+        font-size: 20px;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        margin-bottom: 6px;
+      }
+      .lead {
+        color: #8b93b5;
+        font-size: 13.5px;
+        line-height: 1.6;
+        margin-bottom: 20px;
+      }
+      .lead b {
+        color: var(--ink);
+      }
+      .ctrl {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        flex-wrap: wrap;
+        margin-bottom: 18px;
+      }
+      .ctrl label {
+        font-size: 12.5px;
+        color: var(--ink2);
+      }
+      .ctrl input[type="number"] {
+        width: 64px;
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        color: var(--ink);
+        padding: 7px 9px;
+        font-size: 13px;
+      }
+      #run {
+        padding: 12px 20px;
+        border-radius: 14px;
+        border: none;
+        font-size: 14px;
+        font-weight: 700;
+        color: #fff;
+        background: linear-gradient(140deg, var(--v), var(--p));
+        cursor: pointer;
+      }
+      #run:disabled {
+        opacity: 0.5;
+        cursor: default;
+      }
+      #status {
+        font-size: 12.5px;
+        color: var(--ink2);
+        margin-bottom: 18px;
+        min-height: 18px;
+      }
+
+      /* ── results ── */
+      .results {
+        display: none;
+      }
+      .results.show {
+        display: block;
+      }
+      table.res {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 18px;
+        font-size: 13px;
+      }
+      table.res th,
+      table.res td {
+        padding: 10px 8px;
+        border-bottom: 1px solid var(--line);
+        text-align: right;
+      }
+      table.res th:first-child,
+      table.res td:first-child {
+        text-align: left;
+        color: var(--ink2);
+      }
+      table.res th {
+        color: var(--ink2);
+        font-weight: 600;
+        font-size: 11.5px;
+      }
+      td.win {
+        color: var(--good);
+        font-weight: 700;
+      }
+      .delta {
+        text-align: center;
+        font-size: 22px;
+        font-weight: 800;
+        padding: 16px;
+        border-radius: 18px;
+        background: rgba(143, 230, 176, 0.1);
+        border: 1px solid rgba(143, 230, 176, 0.3);
+        color: var(--good);
+        margin-bottom: 18px;
+      }
+      .delta span {
+        display: block;
+        font-size: 11.5px;
+        font-weight: 500;
+        color: var(--ink2);
+        margin-top: 4px;
+      }
+      .note {
+        font-size: 11.5px;
+        color: #6a7191;
+        line-height: 1.6;
+      }
+
+      /* ── offscreen stage (both variants rendered, only one visible/active) ── */
+      .stage {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 390px;
+        height: 844px;
+        overflow: hidden;
+        opacity: 0;
+        pointer-events: none;
+        z-index: -1;
+      }
+      .stage.active {
+        opacity: 0;
+      }
+      .scene {
+        position: absolute;
+        inset: 0;
+        background: #05060d;
+        padding: 60px 18px;
+      }
+
+      /* HEAVY variant — mirrors current src/App.jsx + styles.css exactly */
+      .heavy .aurora {
+        position: absolute;
+        inset: 0;
+        z-index: 0;
+      }
+      .heavy .glass {
+        position: relative;
+        background: var(--lg-bg);
+        border: 1px solid var(--line);
+        backdrop-filter: blur(20px) saturate(1.5);
+        -webkit-backdrop-filter: blur(20px) saturate(1.5);
+        border-radius: 24px;
+        box-shadow: var(--lg-shadow);
+        padding: 14px;
+        margin-bottom: 10px;
+      }
+      .heavy .hero {
+        backdrop-filter: blur(26px) saturate(1.5);
+        -webkit-backdrop-filter: blur(26px) saturate(1.5);
+        height: 100px;
+      }
+      @keyframes wob {
+        0%,
+        100% {
+          border-radius: 24px 24px 24px 24px;
+        }
+        33% {
+          border-radius: 28px 20px 26px 20px;
+        }
+        66% {
+          border-radius: 20px 28px 20px 26px;
+        }
+      }
+      .heavy .glass.wobble {
+        animation: wob 10s ease-in-out infinite;
+      }
+
+      /* LIGHT variant — proposed optimization */
+      .light .bg {
+        position: absolute;
+        inset: 0;
+        z-index: 0;
+        background:
+          radial-gradient(
+            140% 90% at 30% -10%,
+            rgba(139, 123, 255, 0.16),
+            transparent 55%
+          ),
+          radial-gradient(
+            120% 80% at 90% 10%,
+            rgba(255, 139, 196, 0.12),
+            transparent 60%
+          );
+      }
+      .light .glass {
+        position: relative;
+        background: linear-gradient(
+          155deg,
+          rgba(255, 255, 255, 0.09),
+          rgba(255, 255, 255, 0.03)
+        );
+        border: 1px solid var(--line);
+        border-radius: 24px;
+        box-shadow: var(--lg-shadow);
+        padding: 14px;
+        margin-bottom: 10px;
+      }
+      .light .hero {
+        height: 100px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>실측 성능 벤치마크</h1>
+    <p class="lead">
+      실제 <b>src/App.jsx</b> · <b>styles.css</b>와 동일한 구조(오로라 블롭 4개
+      + goo 필터, 히어로 1개, 언어 카드 5개, 목록 카드 N개 — 모두
+      backdrop-filter + wobble 애니메이션 적용)를 그대로 재현해
+      <b>이 기기에서 실시간으로 프레임 타임을 측정</b>합니다. 숫자는 지금 이
+      창을 열고 있는 브라우저·기기 기준이에요 — 아이폰 Firefox에서 열면 그
+      환경의 실측치가 나옵니다.
+    </p>
+
+    <div class="ctrl">
+      <label>목록 카드 수 (실제 저장 단어 수와 비슷하게)</label>
+      <input type="number" id="n" value="30" min="5" max="200" />
+      <button id="run">측정 시작 (약 8초)</button>
+    </div>
+    <div id="status"></div>
+
+    <div class="results" id="results">
+      <div class="delta" id="delta">—</div>
+      <table class="res">
+        <thead>
+          <tr>
+            <th></th>
+            <th>현재(무거움)</th>
+            <th>최적화(가벼움)</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+      <p class="note">
+        평균 프레임 타임 = 프레임 사이 실제 경과 시간(ms). 낮을수록 좋음. FPS =
+        1000 / 평균 프레임 타임. 60fps 기준 프레임당 예산은 16.7ms.
+        "버벅임"(16.7ms 초과 프레임)과 "심한 끊김"(33ms 초과 = 30fps 이하로
+        떨어진 프레임) 비율도 함께 표시.
+      </p>
+    </div>
+
+    <div class="stage" id="stageHeavy"></div>
+    <div class="stage" id="stageLight"></div>
+
+    <script>
+      const N = () => parseInt(document.getElementById("n").value, 10) || 30;
+
+      function buildHeavy(n) {
+        const circles = [
+          { fill: "#8b7bff", r: 110, cx: 90, cy: 150 },
+          { fill: "#4fd6e6", r: 92, cx: 300, cy: 190 },
+          { fill: "#ff8bc4", r: 86, cx: 170, cy: 300 },
+          { fill: "#7c5cff", r: 70, cx: 300, cy: 430 },
+        ];
+        const svg = `
+        <svg width="0" height="0" style="position:absolute">
+          <defs><filter id="goo">
+            <feGaussianBlur in="SourceGraphic" stdDeviation="18" result="b"/>
+            <feColorMatrix in="b" type="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 22 -9" result="goo"/>
+            <feBlend in="SourceGraphic" in2="goo"/>
+          </filter></defs>
+        </svg>
+        <svg class="aurora" viewBox="0 0 390 820" preserveAspectRatio="xMidYMid slice">
+          <g filter="url(#goo)">
+            ${circles
+              .map(
+                (
+                  c,
+                ) => `<circle fill="${c.fill}" r="${c.r}" cx="${c.cx}" cy="${c.cy}">
+                <animate attributeName="cx" values="${c.cx};${c.cx + 60};${c.cx - 40};${c.cx}" dur="16s" repeatCount="indefinite"/>
+                <animate attributeName="cy" values="${c.cy};${c.cy - 40};${c.cy + 50};${c.cy}" dur="19s" repeatCount="indefinite"/>
+                <animate attributeName="r" values="${c.r};${c.r + 18};${c.r - 10};${c.r}" dur="14s" repeatCount="indefinite"/>
+              </circle>`,
+              )
+              .join("")}
+          </g>
+        </svg>`;
+        const langcards = Array.from(
+          { length: 5 },
+          () => `<div class="glass wobble" style="height:56px"></div>`,
+        ).join("");
+        const list = Array.from(
+          { length: n },
+          () => `<div class="glass wobble" style="height:52px"></div>`,
+        ).join("");
+        return `<div class="scene heavy">${svg}<div class="glass hero"></div>${langcards}${list}</div>`;
+      }
+
+      function buildLight(n) {
+        const langcards = Array.from(
+          { length: 5 },
+          () => `<div class="glass" style="height:56px"></div>`,
+        ).join("");
+        const list = Array.from(
+          { length: n },
+          () => `<div class="glass" style="height:52px"></div>`,
+        ).join("");
+        return `<div class="scene light"><div class="bg"></div><div class="glass hero"></div>${langcards}${list}</div>`;
+      }
+
+      function measure(ms) {
+        return new Promise((resolve) => {
+          const frames = [];
+          let last = null;
+          let start = null;
+          function tick(t) {
+            if (start === null) {
+              start = t;
+              last = t;
+              requestAnimationFrame(tick);
+              return;
+            }
+            frames.push(t - last);
+            last = t;
+            if (t - start < ms) requestAnimationFrame(tick);
+            else resolve(frames);
+          }
+          requestAnimationFrame(tick);
+        });
+      }
+
+      function stats(frames) {
+        const sorted = [...frames].sort((a, b) => a - b);
+        const avg = frames.reduce((a, b) => a + b, 0) / frames.length;
+        const p95 = sorted[Math.floor(sorted.length * 0.95)];
+        const jankPct =
+          (frames.filter((f) => f > 16.7).length / frames.length) * 100;
+        const dropPct =
+          (frames.filter((f) => f > 33.3).length / frames.length) * 100;
+        return {
+          avg,
+          fps: 1000 / avg,
+          p95,
+          jankPct,
+          dropPct,
+        };
+      }
+
+      async function run() {
+        const btn = document.getElementById("run");
+        const statusEl = document.getElementById("status");
+        btn.disabled = true;
+        const n = N();
+
+        const stageHeavy = document.getElementById("stageHeavy");
+        const stageLight = document.getElementById("stageLight");
+        stageHeavy.innerHTML = buildHeavy(n);
+        stageLight.innerHTML = buildLight(n);
+
+        // warm-up: let layout/paint settle + goo filter start animating
+        statusEl.textContent = "준비 중… (레이아웃/블러 워밍업)";
+        stageHeavy.classList.add("active");
+        await new Promise((r) => setTimeout(r, 600));
+
+        statusEl.textContent = "측정 중 1/2 — 현재(무거움) 렌더링…";
+        const heavyFrames = await measure(3000);
+        stageHeavy.classList.remove("active");
+
+        stageLight.classList.add("active");
+        await new Promise((r) => setTimeout(r, 400));
+        statusEl.textContent = "측정 중 2/2 — 최적화(가벼움) 렌더링…";
+        const lightFrames = await measure(3000);
+        stageLight.classList.remove("active");
+
+        const h = stats(heavyFrames);
+        const l = stats(lightFrames);
+
+        const tbody = document.getElementById("tbody");
+        const row = (label, hv, lv, fmt, lowerIsBetter = true) => {
+          const hWins = lowerIsBetter ? hv < lv : hv > lv;
+          return `<tr>
+            <td>${label}</td>
+            <td class="${hWins ? "win" : ""}">${fmt(hv)}</td>
+            <td class="${!hWins ? "win" : ""}">${fmt(lv)}</td>
+          </tr>`;
+        };
+        tbody.innerHTML =
+          row("평균 프레임 타임", h.avg, l.avg, (v) => v.toFixed(2) + "ms") +
+          row("평균 FPS", h.fps, l.fps, (v) => v.toFixed(1), false) +
+          row("p95 프레임 타임", h.p95, l.p95, (v) => v.toFixed(2) + "ms") +
+          row(
+            "버벅임 프레임 비율 (>16.7ms)",
+            h.jankPct,
+            l.jankPct,
+            (v) => v.toFixed(1) + "%",
+          ) +
+          row(
+            "심한 끊김 프레임 비율 (>33ms)",
+            h.dropPct,
+            l.dropPct,
+            (v) => v.toFixed(1) + "%",
+          );
+
+        const speedup = h.avg / l.avg;
+        const deltaEl = document.getElementById("delta");
+        deltaEl.textContent = `프레임당 ${speedup.toFixed(2)}배 더 빠름`;
+        deltaEl.innerHTML += `<span>평균 프레임 타임 ${h.avg.toFixed(1)}ms → ${l.avg.toFixed(1)}ms · FPS ${h.fps.toFixed(0)} → ${l.fps.toFixed(0)}</span>`;
+
+        document.getElementById("results").classList.add("show");
+        statusEl.textContent = `측정 완료 (카드 ${n}개 기준, User-Agent: ${navigator.userAgent.slice(0, 60)}…)`;
+        btn.disabled = false;
+      }
+
+      document.getElementById("run").addEventListener("click", run);
+    </script>
+  </body>
+</html>

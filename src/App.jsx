@@ -28,7 +28,9 @@ import {
 import {
   wordsToJSON,
   wordsToCSV,
+  wordsToXLSX,
   wordsFromJSON,
+  wordsFromXLSX,
   mergeWords,
 } from "./lib/backup.js";
 import { speak, primeSpeech } from "./lib/speech.js";
@@ -98,20 +100,107 @@ const IconStack = () => (
   </svg>
 );
 
-/* ───────────────────── liquid aurora background ─────────────────────
- * Each blob is its own compositor layer: filter:blur() is applied to a
- * *static* shape and rasterized once, so the drift animation below only
- * moves that cached texture via transform (GPU, cheap) instead of asking
- * the browser to recompute a Gaussian blur every frame (CPU, expensive —
- * that's what the old SVG feGaussianBlur/feBlend "goo" filter did).
- */
+/* ───────────────────── liquid aurora background ───────────────────── */
+
 function AuroraBg() {
   return (
     <div className="vc-aurora" aria-hidden="true">
-      <div className="vc-aurora-blob a" />
-      <div className="vc-aurora-blob b" />
-      <div className="vc-aurora-blob c" />
-      <div className="vc-aurora-blob d" />
+      <svg width="0" height="0" style={{ position: "absolute" }}>
+        <defs>
+          <filter id="vc-goo">
+            <feGaussianBlur in="SourceGraphic" stdDeviation="18" result="b" />
+            <feColorMatrix
+              in="b"
+              type="matrix"
+              values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 22 -9"
+              result="goo"
+            />
+            <feBlend in="SourceGraphic" in2="goo" />
+          </filter>
+        </defs>
+      </svg>
+      <svg
+        className="vc-aurora-svg"
+        viewBox="0 0 390 820"
+        preserveAspectRatio="xMidYMid slice"
+      >
+        <g filter="url(#vc-goo)">
+          <circle fill="#8b7bff" r="110" cx="90" cy="150">
+            <animate
+              attributeName="cx"
+              values="90;170;60;90"
+              dur="16s"
+              repeatCount="indefinite"
+            />
+            <animate
+              attributeName="cy"
+              values="150;110;210;150"
+              dur="19s"
+              repeatCount="indefinite"
+            />
+            <animate
+              attributeName="r"
+              values="110;128;100;110"
+              dur="14s"
+              repeatCount="indefinite"
+            />
+          </circle>
+          <circle fill="#4fd6e6" r="92" cx="300" cy="190">
+            <animate
+              attributeName="cx"
+              values="300;240;330;300"
+              dur="20s"
+              repeatCount="indefinite"
+            />
+            <animate
+              attributeName="cy"
+              values="190;260;150;190"
+              dur="15s"
+              repeatCount="indefinite"
+            />
+            <animate
+              attributeName="r"
+              values="92;108;82;92"
+              dur="17s"
+              repeatCount="indefinite"
+            />
+          </circle>
+          <circle fill="#ff8bc4" r="86" cx="170" cy="300">
+            <animate
+              attributeName="cx"
+              values="170;120;230;170"
+              dur="18s"
+              repeatCount="indefinite"
+            />
+            <animate
+              attributeName="cy"
+              values="300;350;270;300"
+              dur="21s"
+              repeatCount="indefinite"
+            />
+            <animate
+              attributeName="r"
+              values="86;104;78;86"
+              dur="15s"
+              repeatCount="indefinite"
+            />
+          </circle>
+          <circle fill="#7c5cff" r="70" cx="300" cy="430">
+            <animate
+              attributeName="cx"
+              values="300;250;330;300"
+              dur="19s"
+              repeatCount="indefinite"
+            />
+            <animate
+              attributeName="cy"
+              values="430;390;470;430"
+              dur="16s"
+              repeatCount="indefinite"
+            />
+          </circle>
+        </g>
+      </svg>
     </div>
   );
 }
@@ -1023,16 +1112,20 @@ function BackupBar({ words, commit }) {
   const onImport = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    const isXlsx = /\.xlsx$/i.test(file.name);
     const reader = new FileReader();
     reader.onload = () => {
       try {
-        const imported = wordsFromJSON(String(reader.result));
+        const imported = isXlsx
+          ? wordsFromXLSX(reader.result)
+          : wordsFromJSON(String(reader.result));
         commit((prev) => mergeWords(prev, imported));
       } catch (err) {
         alert(err.message);
       }
     };
-    reader.readAsText(file);
+    if (isXlsx) reader.readAsArrayBuffer(file);
+    else reader.readAsText(file);
     e.target.value = "";
   };
 
@@ -1071,12 +1164,24 @@ function BackupBar({ words, commit }) {
               ⬆ 불러오기
               <input
                 type="file"
-                accept=".json,application/json"
+                accept=".json,application/json,.xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                 onChange={onImport}
                 hidden
               />
             </label>
           </div>
+          <button
+            className="vc-bk-more"
+            onClick={() =>
+              download(
+                "doesaegim.xlsx",
+                wordsToXLSX(words),
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+              )
+            }
+          >
+            엑셀(.xlsx)로 백업
+          </button>
           <button
             className="vc-bk-more"
             onClick={() =>

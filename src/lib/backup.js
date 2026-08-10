@@ -1,6 +1,7 @@
-// Pure backup/restore helpers. Export to JSON (full fidelity) or CSV
-// (human-friendly), and import back with validation. No I/O.
+// Pure backup/restore helpers. Export to JSON (full fidelity), CSV, or
+// XLSX (human-friendly), and import back with validation. No I/O.
 
+import * as XLSX from "xlsx";
 import { LANG_KEYS } from "./languages.js";
 
 export const BACKUP_VERSION = 1;
@@ -114,12 +115,13 @@ export function parseCSV(str) {
   return rows;
 }
 
-export function wordsFromCSV(str) {
-  const rows = parseCSV(str).filter((r) => r.some((c) => c !== ""));
-  if (rows.length === 0) return [];
-  const header = rows[0].map((h) => h.trim());
+// Shared by CSV and XLSX: turn header+data rows (array of arrays) into words.
+function rowsToWords(rows) {
+  const data = rows.filter((r) => r.some((c) => c !== "" && c != null));
+  if (data.length === 0) return [];
+  const header = data[0].map((h) => String(h ?? "").trim());
   const idx = Object.fromEntries(CSV_COLS.map((c) => [c, header.indexOf(c)]));
-  return rows
+  return data
     .slice(1)
     .map((r, i) =>
       normalizeWord(
@@ -136,4 +138,28 @@ export function wordsFromCSV(str) {
       ),
     )
     .filter(Boolean);
+}
+
+export function wordsFromCSV(str) {
+  return rowsToWords(parseCSV(str));
+}
+
+// ---- XLSX ---------------------------------------------------------------
+
+// Returns an ArrayBuffer (binary), not text — wrap in a Blob to download.
+export function wordsToXLSX(words) {
+  const rows = [CSV_COLS, ...words.map((w) => CSV_COLS.map((c) => w[c] ?? ""))];
+  const ws = XLSX.utils.aoa_to_sheet(rows);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "words");
+  return XLSX.write(wb, { bookType: "xlsx", type: "array" });
+}
+
+// Accepts an ArrayBuffer/Uint8Array (e.g. from FileReader.readAsArrayBuffer).
+export function wordsFromXLSX(data) {
+  const bytes = data instanceof Uint8Array ? data : new Uint8Array(data);
+  const wb = XLSX.read(bytes, { type: "array" });
+  const ws = wb.Sheets[wb.SheetNames[0]];
+  const rows = XLSX.utils.sheet_to_json(ws, { header: 1 });
+  return rowsToWords(rows);
 }
