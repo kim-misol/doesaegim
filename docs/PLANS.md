@@ -4,6 +4,19 @@
 
 ---
 
+## PLAN-0008 · 백업·복원 섹션 리디자인
+
+- 날짜: 2026-08-10
+- 상태: 구현 완료, lint 클린 / test·build 로컬 확인 필요
+- 목표: BackupBar를 BulkAddBar와 일관된 패턴(포맷 세그 토글 + 상태 피드백)으로 정리.
+- 인수 조건:
+  - [x] Excel/JSON 세그 토글, CSV는 하단 링크
+  - [x] 백업/불러오기 버튼에 상태 피드백(받았어요 ✓ / 불러오는 중… / N개 추가 완료 ✓)
+- 건드린 파일: src/App.jsx, src/styles.css
+- 비고: 시안은 design/backup-redesign-v2.html, A안 채택.
+
+---
+
 ## PLAN-0007 · 간격 수정 + 포맷 파일 다운로드 (PLAN-0006 후속)
 
 - 날짜: 2026-08-10

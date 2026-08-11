@@ -1233,11 +1233,30 @@ function AccountBar({ user }) {
 
 function BackupBar({ words, commit }) {
   const [open, setOpen] = useState(false);
+  const [format, setFormat] = useState("xlsx");
+  const [exported, setExported] = useState(false);
+  const [importStatus, setImportStatus] = useState("idle"); // idle | busy | done
+  const [importCount, setImportCount] = useState(0);
+
+  const onExport = () => {
+    if (format === "xlsx") {
+      download(
+        "doesaegim.xlsx",
+        wordsToXLSX(words),
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      );
+    } else {
+      download("doesaegim.json", wordsToJSON(words), "application/json");
+    }
+    setExported(true);
+    setTimeout(() => setExported(false), 2000);
+  };
 
   const onImport = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
     const isXlsx = /\.xlsx$/i.test(file.name);
+    setImportStatus("busy");
     const reader = new FileReader();
     reader.onload = () => {
       try {
@@ -1245,9 +1264,17 @@ function BackupBar({ words, commit }) {
           ? wordsFromXLSX(reader.result)
           : wordsFromJSON(String(reader.result));
         commit((prev) => mergeWords(prev, imported));
+        setImportCount(imported.length);
+        setImportStatus("done");
+        setTimeout(() => setImportStatus("idle"), 2000);
       } catch (err) {
+        setImportStatus("idle");
         alert(err.message);
       }
+    };
+    reader.onerror = () => {
+      setImportStatus("idle");
+      alert("파일을 읽지 못했어요.");
     };
     if (isXlsx) reader.readAsArrayBuffer(file);
     else reader.readAsText(file);
@@ -1272,25 +1299,41 @@ function BackupBar({ words, commit }) {
             기기를 바꾸거나 브라우저를 정리해도 단어를 잃지 않도록 파일로
             저장해요.
           </p>
+          <div className="vc-seg">
+            <button
+              className={format === "xlsx" ? "on" : ""}
+              onClick={() => setFormat("xlsx")}
+            >
+              Excel
+            </button>
+            <button
+              className={format === "json" ? "on" : ""}
+              onClick={() => setFormat("json")}
+            >
+              JSON
+            </button>
+          </div>
           <div className="vc-bk-btns">
             <button
-              className="vc-bk-btn primary"
-              onClick={() =>
-                download(
-                  "doesaegim.json",
-                  wordsToJSON(words),
-                  "application/json",
-                )
-              }
+              className={`vc-bk-btn primary ${exported ? "done" : ""}`}
+              onClick={onExport}
             >
-              ⬇ 내 단어 백업
+              {exported ? "받았어요 ✓" : "⬇ 내 단어 백업"}
             </button>
-            <label className="vc-bk-btn">
-              ⬆ 불러오기
+            <label
+              className={`vc-bk-btn ${importStatus !== "idle" ? importStatus : ""}`}
+              aria-disabled={importStatus === "busy"}
+            >
+              {importStatus === "busy"
+                ? "불러오는 중…"
+                : importStatus === "done"
+                  ? `${importCount}개 추가 완료 ✓`
+                  : "⬆ 불러오기"}
               <input
                 type="file"
                 accept=".json,application/json,.xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                 onChange={onImport}
+                disabled={importStatus === "busy"}
                 hidden
               />
             </label>
@@ -1298,22 +1341,10 @@ function BackupBar({ words, commit }) {
           <button
             className="vc-bk-more"
             onClick={() =>
-              download(
-                "doesaegim.xlsx",
-                wordsToXLSX(words),
-                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-              )
-            }
-          >
-            엑셀(.xlsx)로 백업
-          </button>
-          <button
-            className="vc-bk-more"
-            onClick={() =>
               download("doesaegim.csv", wordsToCSV(words), "text/csv")
             }
           >
-            엑셀용 CSV로 내보내기
+            CSV로도 내보내기
           </button>
         </div>
       )}
