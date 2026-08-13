@@ -488,6 +488,13 @@ body {
   inset: 0;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
+  /* Safari/WebKit ignores backface-visibility on elements with
+   * backdrop-filter, so the "hidden" face still renders (blurred) and
+   * bleeds through the other face's text. Force it with opacity too,
+   * switched exactly at the rotation's halfway point (half of the
+   * 0.6s transform transition below) so the flip illusion is unchanged. */
+  opacity: 1;
+  transition: opacity 0s linear 0.3s;
   border-radius: 34px;
   padding: 30px;
   display: flex;
@@ -503,6 +510,14 @@ body {
     0 34px 80px -34px rgba(120, 90, 255, 0.6);
   overflow: hidden;
   animation: vc-breathe 9s ease-in-out infinite;
+}
+.vc-card:not(.flipped) .vc-face.back {
+  opacity: 0;
+  pointer-events: none;
+}
+.vc-card.flipped .vc-face.front {
+  opacity: 0;
+  pointer-events: none;
 }
 @keyframes vc-breathe {
   0%,

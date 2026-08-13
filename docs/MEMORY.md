@@ -5,6 +5,14 @@
 
 ---
 
+## 2026-08-13 · 복습 카드 뒤집을 때 단어·뜻 겹침 버그 (PLAN-0009)
+
+- 증상: 배포본(GitHub Pages)에서 복습 카드를 뒤집으면 단어와 뜻이 반투명하게 겹쳐 보임(화면 녹화로 재현 확인).
+- 원인: `.vc-face`가 `backface-visibility: hidden`과 `backdrop-filter: blur()`를 동시에 사용 — Safari/WebKit이 `backdrop-filter`가 있는 요소에서 `backface-visibility`를 무시하는 알려진 버그. 3D 회전 중 "숨겨져야 할" 뒷면이 블러된 채로 계속 렌더링되어 앞면과 겹침.
+- 한 일: `.vc-face`에 `opacity` 기반 강제 숨김 추가. `.vc-card:not(.flipped) .vc-face.back`과 `.vc-card.flipped .vc-face.front`를 `opacity: 0`으로 명시하고, `.vc-face`에 `transition: opacity 0s linear 0.3s`를 줘서 카드 회전(0.6s)의 정확히 절반 지점에서 순간 전환되게 함 — 뒤집는 애니메이션 느낌은 그대로 유지하면서 겹침만 제거.
+- 변경 파일: src/styles.css(.vc-face)
+- 검증: `npm run lint` 클린(CSS만 변경, JS 미변경). 실제 뒤집기 애니메이션은 로컬/배포본에서 육안 확인 필요(자동 테스트 대상 아님 — App.jsx는 렌더만 담당).
+
 ## 2026-08-10 · 백업·복원 섹션 리디자인 (PLAN-0008)
 
 - 한 일: `BackupBar`를 BulkAddBar와 같은 패턴으로 정리. Excel/JSON `.vc-seg` 토글 + "⬇ 내 단어 백업"(누르면 "받았어요 ✓" 2초)/"⬆ 불러오기"(busy/done 상태로 "불러오는 중…" → "N개 추가 완료 ✓") 2버튼, CSV는 하단 "CSV로도 내보내기" 링크로 격하. `.vc-bk-btn.busy`/`.vc-bk-btn.done` CSS를 `.primary` 한정에서 범용으로 넓혀 불러오기 버튼(비-primary)에도 재사용.

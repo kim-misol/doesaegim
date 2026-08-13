@@ -4,6 +4,18 @@
 
 ---
 
+## PLAN-0009 · 복습 카드 플립 겹침 버그 수정
+
+- 날짜: 2026-08-13
+- 상태: 구현 완료, lint 클린 / 육안 확인 필요
+- 목표: 카드를 뒤집으면 단어·뜻이 겹쳐 보이는 버그 수정.
+- 원인: Safari/WebKit이 `backdrop-filter`가 있는 요소의 `backface-visibility: hidden`을 무시하는 버그.
+- 조치: `.vc-face`에 opacity 기반 강제 숨김(회전 애니메이션 절반 지점에 전환) 추가.
+- 건드린 파일: src/styles.css
+- 비고: 상세는 docs/MEMORY.md 참고.
+
+---
+
 ## PLAN-0008 · 백업·복원 섹션 리디자인
 
 - 날짜: 2026-08-10
