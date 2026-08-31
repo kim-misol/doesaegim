@@ -4,6 +4,17 @@
 
 ---
 
+## PLAN-0010 · Supabase Free 플랜 pause 방지
+
+- 날짜: 2026-09-01
+- 상태: 구현 완료, 다음 스케줄 실행 확인 필요
+- 목표: Supabase Free 프로젝트의 7일 비활동 자동 pause를 무료로 방지.
+- 조치: GitHub Actions cron(월·목)으로 `words` 테이블에 가벼운 SELECT 요청.
+- 건드린 파일: .github/workflows/supabase-keepalive.yml, docs/SUPABASE.md
+- 비고: DB 이전 불필요 — Supabase 정책(공식 문서 확인) 대응. 상세는 docs/MEMORY.md.
+
+---
+
 ## PLAN-0009 · 복습 카드 플립 겹침 버그 수정
 
 - 날짜: 2026-08-13

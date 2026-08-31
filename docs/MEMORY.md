@@ -5,6 +5,15 @@
 
 ---
 
+## 2026-09-01 · Supabase Free 플랜 pause 경고 이메일 대응 (PLAN-0010)
+
+- 배경: "무료 사용 기한 일주일 남음" 이메일 — 실제로는 Supabase Free 프로젝트가 7일간 DB 활동 없으면 자동 일시정지되는 정책의 사전 경고 메일(만료·삭제 아님, 데이터는 1년간 보존되고 대시보드에서 Resume 가능). 웹 검색으로 공식 문서(supabase.com/docs/guides/platform/free-project-pausing) 확인.
+- 결정: DB 이전 불필요. `.github/workflows/supabase-keepalive.yml` 추가 — 월·목 03:00 UTC에 기존 `VITE_SUPABASE_URL`/`VITE_SUPABASE_ANON_KEY` 시크릿(이미 deploy.yml에서 씀)으로 `words` 테이블에 가벼운 SELECT를 보내 활동을 만들어 pause 방지. 시크릿 없으면 스킵.
+- 변경 파일: .github/workflows/supabase-keepalive.yml(신규), docs/SUPABASE.md
+- 검증: YAML 문법 확인(python yaml.safe_load) 완료. 실제 cron 동작은 GitHub Actions 탭에서 다음 월/목 실행 후, 또는 workflow_dispatch로 수동 실행해 로그 확인 필요.
+
+---
+
 ## 2026-08-13 · 복습 카드 뒤집을 때 단어·뜻 겹침 버그 (PLAN-0009)
 
 - 증상: 배포본(GitHub Pages)에서 복습 카드를 뒤집으면 단어와 뜻이 반투명하게 겹쳐 보임(화면 녹화로 재현 확인).

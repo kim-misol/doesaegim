@@ -44,6 +44,15 @@ VITE_TRANSLATE_ENDPOINT=https://<project-ref>.supabase.co/functions/v1/translate
 GitHub Pages 배포면 이 값들을 Actions Secrets/Variables로 넣어 빌드 시 주입한다.
 anon 키는 공개 키라 번들에 포함돼도 안전(데이터 보호는 RLS가 담당).
 
+## Free 플랜 자동 일시정지(pause) 방지
+
+Supabase Free 프로젝트는 7일간 DB 활동이 없으면 자동으로 일시정지된다(데이터는
+안 지워지고, 대시보드에서 최대 1년 안에 Resume 가능). `.github/workflows/supabase-keepalive.yml`이
+월·목 03:00 UTC에 `words` 테이블에 가벼운 SELECT를 날려 활동을 만들어준다
+(RLS 때문에 anon 키로는 빈 배열이 오지만, 요청 자체가 Postgres에 도달하는 게
+중요). `VITE_SUPABASE_URL`/`VITE_SUPABASE_ANON_KEY` 시크릿이 없으면 조용히
+스킵한다. 완전히 pause를 없애려면 Pro 플랜($25/월)으로 업그레이드.
+
 ## 데이터 이전(기존 로컬 → 클라우드)
 
 로그인 전 화면에서 **단어 → JSON 내보내기**로 백업 → 로그인 → **가져오기**로
