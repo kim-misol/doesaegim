@@ -207,3 +207,9 @@
   - **간격**: Leitner `[0,1,3,7,14,30]`일.
 - 변경 파일: 전체 스캐폴드.
 - 후속 작업: 카드 편집, 예문/이미지 필드, CSV 입출력, 학습 통계/스트릭.
+
+## 2026-10-02 · iOS 출시 준비
+
+- Capacitor ios/ 생성(com.misolkim.doesaegim), 아이콘·스플래시·Info.plist 설정, docs/IOS_RELEASE.md 작성. 시뮬레이터 빌드는 xcodebuild 패키지 해석(binary artifact 다운로드)에서 CLI 정지 → Xcode GUI로 빌드 필요. 블로커: Blob 다운로드가 WKWebView에서 불가.
+- 파일 내보내기: lib/download.js saveFile 추가(웹=a.download, iOS=Filesystem+Share), @capacitor/filesystem·share 설치. 테스트 6개 추가, 전체 100 통과.
+- 시뮬레이터(iPhone 17 Pro) 검증: 앱 렌더 OK, 템플릿 내보내기→공유 시트 OK. 하단 흰 띠는 contentInset=never + backgroundColor로 해결, 상단은 .vc-root에 safe-area-inset-top 패딩.

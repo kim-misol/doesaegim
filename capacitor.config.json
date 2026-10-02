@@ -1,0 +1,7 @@
+{
+  "appId": "com.misolkim.doesaegim",
+  "appName": "되새김",
+  "webDir": "dist",
+  "backgroundColor": "#070912",
+  "ios": { "contentInset": "never" }
+}
