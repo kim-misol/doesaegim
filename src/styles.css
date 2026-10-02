@@ -55,6 +55,7 @@ body {
   min-height: 100dvh;
   width: 100%;
   overflow-x: hidden;
+  padding-top: env(safe-area-inset-top);
 }
 
 /* ── liquid aurora background ── */
