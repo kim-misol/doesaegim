@@ -1449,3 +1449,10 @@ body {
 .vc-bk-more:hover {
   color: var(--ink);
 }
+
+.vc-account-msg {
+  font-size: 12px;
+  color: var(--forgot);
+  text-align: center;
+  margin-top: 6px;
+}

@@ -19,6 +19,16 @@ Authentication → Providers → **Email** 켜기 (기본 on). 앱은 비밀번�
 이메일로 링크를 보내 로그인한다(`signInWithOtp`). Redirect URL에 배포 주소와
 `http://localhost:5173` 를 추가(Authentication → URL Configuration).
 
+**iOS 앱은 메일의 링크 대신 코드를 입력해 로그인한다.** Authentication → Email Templates →
+**Magic Link**(와 신규 가입용 **Confirm signup**) 본문에 `{{ .Token }}` 을 넣는다:
+
+```html
+<p>되새김 로그인 코드: <b>{{ .Token }}</b></p>
+<p>또는 <a href="{{ .ConfirmationURL }}">여기</a>를 눌러 웹에서 로그인</p>
+```
+
+코드 길이는 Authentication → Providers → Email → _Email OTP Length_ (기본 6).
+
 ## 4. 번역 프록시(Edge Function)
 
 ```bash

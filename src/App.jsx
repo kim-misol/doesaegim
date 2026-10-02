@@ -24,6 +24,8 @@ import {
   currentUser,
   onAuthChange,
   signInWithEmail,
+  verifyEmailCode,
+  normalizeCode,
   signOut,
 } from "./lib/supabase.js";
 import {
@@ -1189,6 +1191,8 @@ function WordList({ words, commit }) {
 function AccountBar({ user }) {
   const [email, setEmail] = useState("");
   const [sent, setSent] = useState(false);
+  const [code, setCode] = useState("");
+  const [msg, setMsg] = useState("");
 
   if (user) {
     return (
@@ -1200,26 +1204,50 @@ function AccountBar({ user }) {
       </div>
     );
   }
+  const sendMail = async () => {
+    const { error } = await signInWithEmail(email.trim());
+    setMsg(error ? "메일을 보내지 못했어요" : "");
+    if (!error) setSent(true);
+  };
+  const verify = async () => {
+    const { error } = await verifyEmailCode(email.trim(), code);
+    if (error) setMsg("코드가 맞지 않아요");
+  };
   return (
-    <div className="vc-account">
-      <input
-        className="vc-account-input"
-        type="email"
-        placeholder="이메일로 로그인·동기화"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-      />
-      <button
-        className="vc-mini"
-        disabled={!email.trim() || sent}
-        onClick={async () => {
-          const { error } = await signInWithEmail(email.trim());
-          if (!error) setSent(true);
-        }}
-      >
-        {sent ? "메일 확인" : "링크 받기"}
-      </button>
-    </div>
+    <>
+      <div className="vc-account">
+        <input
+          className="vc-account-input"
+          type="email"
+          placeholder="이메일로 로그인·동기화"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
+        <button className="vc-mini" disabled={!email.trim()} onClick={sendMail}>
+          {sent ? "다시 받기" : "코드 받기"}
+        </button>
+      </div>
+      {sent && (
+        <div className="vc-account">
+          <input
+            className="vc-account-input"
+            inputMode="numeric"
+            autoComplete="one-time-code"
+            placeholder="메일로 받은 코드 입력"
+            value={code}
+            onChange={(e) => setCode(e.target.value)}
+          />
+          <button
+            className="vc-mini"
+            disabled={!normalizeCode(code)}
+            onClick={verify}
+          >
+            확인
+          </button>
+        </div>
+      )}
+      {msg && <div className="vc-account-msg">{msg}</div>}
+    </>
   );
 }
 

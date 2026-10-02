@@ -48,7 +48,9 @@ export async function currentUser(env = import.meta.env) {
   return data?.user ?? null;
 }
 
-// Passwordless magic-link sign in. Returns { error } shape.
+// Passwordless sign in: emails a link AND a one-time code. The native iOS app
+// has no deep link back from the mail, so it signs in by typing the code.
+// Returns { error } shape.
 export async function signInWithEmail(email, env = import.meta.env) {
   const sb = await getSupabase(env);
   if (!sb) return { error: new Error("cloud not configured") };
@@ -58,6 +60,17 @@ export async function signInWithEmail(email, env = import.meta.env) {
       emailRedirectTo: window.location.origin + window.location.pathname,
     },
   });
+}
+
+export const normalizeCode = (code) => String(code ?? "").replace(/\D/g, "");
+
+// Complete sign-in with the code from the email. Returns { data, error }.
+export async function verifyEmailCode(email, code, env = import.meta.env) {
+  const token = normalizeCode(code);
+  if (!token) return { error: new Error("empty code") };
+  const sb = await getSupabase(env);
+  if (!sb) return { error: new Error("cloud not configured") };
+  return sb.auth.verifyOtp({ email, token, type: "email" });
 }
 
 export async function signOut(env = import.meta.env) {
