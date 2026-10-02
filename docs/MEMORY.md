@@ -214,3 +214,5 @@
 - 파일 내보내기: lib/download.js saveFile 추가(웹=a.download, iOS=Filesystem+Share), @capacitor/filesystem·share 설치. 테스트 6개 추가, 전체 100 통과.
 - 시뮬레이터(iPhone 17 Pro) 검증: 앱 렌더 OK, 템플릿 내보내기→공유 시트 OK. 하단 흰 띠는 contentInset=never + backgroundColor로 해결, 상단은 .vc-root에 safe-area-inset-top 패딩.
 - 로그인: iOS는 딥링크 없이 이메일 OTP 코드 입력 방식. supabase.js verifyEmailCode/normalizeCode 추가, AccountBar에 코드 입력칸. Supabase 메일 템플릿에 {{ .Token }} 필요(docs/SUPABASE.md). 테스트 105 통과.
+- TestFlight: App Store Connect 앱 "되새김 - 플래시카드"(ID 6818456191, "되새김"은 이름 중복) 생성, App ID com.misolkim.doesaegim 등록, 빌드 1.0(1) 업로드. 재업로드: Release archive → exportArchive(method=app-store-connect, destination=upload). 다음 업로드는 CURRENT_PROJECT_VERSION 올릴 것.
+- 앱 아이콘 최종: 플립 카드(A↔가 + 초록 순환 화살표). 1024px 무알파. 아이콘 변경 후엔 TestFlight 빌드 번호를 올려 재업로드.
