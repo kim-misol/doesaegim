@@ -1,3 +1,4 @@
+import { saveFile } from "./lib/download.js";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { LANGS, LANG_KEYS, otherLang } from "./lib/languages.js";
 import {
@@ -207,15 +208,8 @@ function AuroraBg() {
 
 /* ───────────────────────── app ───────────────────────── */
 
-// Shared by BackupBar and BulkAddBar to trigger a file download.
-function download(name, data, type) {
-  const url = URL.createObjectURL(new Blob([data], { type }));
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = name;
-  a.click();
-  URL.revokeObjectURL(url);
-}
+// Shared by BackupBar and BulkAddBar to export a file (native share sheet on iOS).
+const download = saveFile;
 
 export default function App() {
   const [words, setWords] = useState([]);
